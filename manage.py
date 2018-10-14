@@ -9,6 +9,7 @@ from flask_wtf import CSRFProtect
 # 指定session保存的位置
 from flask_session import Session
 from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
 
 
 class Config(object):
@@ -46,6 +47,10 @@ CSRFProtect(app)
 # 设置session保存指定位置
 Session(app)
 manager = Manager(app)
+# 参数顺序不能反
+Migrate(app, db)
+# 添加迁移命令
+manager.add_command('db', MigrateCommand)
 
 
 @app.route('/')
