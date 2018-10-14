@@ -1,5 +1,6 @@
 """
-抽取配置代码
+抽取配置代码，不同应用场景，不同的配置
+字典记录配置
 """
 from redis import StrictRedis
 
@@ -25,3 +26,25 @@ class Config(object):
     SESSION_PERMANENT = False
     # 过期时间为2天
     PERMANENT_SESSION_LIFETIME = 86400 * 2
+
+
+class DevelopmentConfig(Config):
+    """开发环境配置"""
+    DEBUG = True
+
+
+class ProductionConfig(Config):
+    """生产环境"""
+    DEBUG = False
+
+
+class TestingConfig(Config):
+    """测试环境"""
+    TESTING = True
+
+# 字典记录配置
+config_dict = {
+    'develop': DevelopmentConfig,
+    'product': ProductionConfig,
+    'test': TestingConfig
+}
