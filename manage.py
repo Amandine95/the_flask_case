@@ -1,6 +1,6 @@
 """
-配置redis和csrf
-session存储在redis里
+manage.py程序启动入口
+不关心app创建及业务逻辑、只关心启动相关参数
 """
 import logging
 
@@ -20,18 +20,6 @@ manager = Manager(app)
 Migrate(app, db)
 # 添加迁移命令
 manager.add_command('db', MigrateCommand)
-
-
-@app.route('/')
-def index():
-    # 设置session
-    # session['name'] = 'sam'
-    # 测试打印日志
-    logging.debug('测试debug')
-    # current输出日志
-    # current_app.logger.error('测试error')
-    return 'index'
-
 
 if __name__ == '__main__':
     manager.run()

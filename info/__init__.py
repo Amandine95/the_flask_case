@@ -1,5 +1,5 @@
 """
-将业务逻辑代码抽取,info存放所有业务逻辑代码
+将业务逻辑代码抽取,info存放所有业务逻辑代码,app的创建代码
 """
 from logging.handlers import RotatingFileHandler
 import logging
@@ -13,6 +13,8 @@ from redis import StrictRedis
 from config import config_dict
 
 # 创建数据库对象
+from info.moudles.index import index_blu
+
 db = SQLAlchemy()
 
 
@@ -47,4 +49,7 @@ def create_app(config_name):
     CSRFProtect(app)
     # 设置session保存指定位置
     Session(app)
+
+    # 注册蓝图
+    app.register_blueprint(index_blu)
     return app
