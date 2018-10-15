@@ -1,5 +1,5 @@
 """
-将业务逻辑代码抽取,info存放所有业务逻辑代码,app的创建代码
+处理关于redis_store相关问题
 """
 from logging.handlers import RotatingFileHandler
 import logging
@@ -12,10 +12,9 @@ from redis import StrictRedis
 
 from config import config_dict
 
-# 创建数据库对象
-from info.moudles.index import index_blu
-
 db = SQLAlchemy()
+# type设置变量注释后可以智能提示
+redis_store = None  # type:StrictRedis
 
 
 def setup_log(config_name):
@@ -43,13 +42,17 @@ def create_app(config_name):
     # 初始化db,flask中可以先创建扩展包对象再调用init_app初始化
     db.init_app(app)
 
-    # redis初始化
+    # 声明为全局变量
+    global redis_store
+    # redis赋值，此处用于在业务逻辑中的存储
     redis_store = StrictRedis(host=config_dict[config_name].REDIS_HOST, port=config_dict[config_name].REDIS_PORT)
     # 开启当前项目CSRF保护,只做服务器验证
     CSRFProtect(app)
     # 设置session保存指定位置
     Session(app)
 
+    # 蓝图注册时导入
+    from info.moudles.index import index_blu
     # 注册蓝图
     app.register_blueprint(index_blu)
     return app

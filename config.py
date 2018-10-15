@@ -22,7 +22,7 @@ class Config(object):
     SESSION_TYPE = 'redis'
     # 开启session签名
     SESSION_SIGNER = True
-    # 指定session保存的redis
+    # 指定session保存的redis，此处的redis只用于session的存储
     SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT)
     # 设置session需要过期
     SESSION_PERMANENT = False
