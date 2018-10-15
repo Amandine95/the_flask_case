@@ -2,6 +2,8 @@
 抽取配置代码，不同应用场景，不同的配置
 字典记录配置
 """
+import logging
+
 from redis import StrictRedis
 
 
@@ -26,6 +28,8 @@ class Config(object):
     SESSION_PERMANENT = False
     # 过期时间为2天
     PERMANENT_SESSION_LIFETIME = 86400 * 2
+    # 设置日志等级,默认环境下为debug
+    LOG_LEVEL = logging.DEBUG
 
 
 class DevelopmentConfig(Config):
@@ -36,6 +40,8 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """生产环境"""
     DEBUG = False
+    # 生产环境下日志等级为warning
+    LOG_LEVEL = logging.WARNING
 
 
 class TestingConfig(Config):
