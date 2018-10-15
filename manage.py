@@ -7,7 +7,10 @@ from flask import session
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 
-from info import app, db
+from info import create_app, db
+
+# 通过配置名创建app
+app = create_app('develop')
 
 # manage文件只关注一下代码
 manager = Manager(app)
