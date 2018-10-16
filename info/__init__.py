@@ -47,7 +47,7 @@ def create_app(config_name):
     # redis赋值，此处用于在业务逻辑中的存储
     redis_store = StrictRedis(host=config_dict[config_name].REDIS_HOST, port=config_dict[config_name].REDIS_PORT)
     # 开启当前项目CSRF保护,只做服务器验证
-    CSRFProtect(app)
+    # CSRFProtect(app)
     # 设置session保存指定位置
     Session(app)
 

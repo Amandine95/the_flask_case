@@ -156,6 +156,7 @@
             <div class="form_group">
                 <input type="text" name="smscode" id="smscode" class="code_pwd">
                 <div class="input_tip">手机验证码</div>
+                {#href后面为JavaScript:; 表示不跳转，只执行代码#}
                 <a href="javascript:;" class="get_code" onclick="sendSMSCode()">点击获取验证码</a>
                 <div id="register-sms-code-err" class="error_tip">验证码不能为空</div>
             </div>

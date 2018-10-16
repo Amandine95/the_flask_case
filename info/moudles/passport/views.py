@@ -23,7 +23,7 @@ def get_image_code():
     5、返回验证码图片
     """
     # 取参数、args获取url里 ？ 后面的内容
-    image_code_id = request.args.get("ImageCodeId", None)
+    image_code_id = request.args.get("imageCodeId", None)
     # 判断是否有值
     if not image_code_id:
         # 抛出异常
@@ -33,7 +33,7 @@ def get_image_code():
         name, text, image = captcha.generate_captcha()
         # 保存图片验证码内容到redis
         try:
-            redis_store.set("ImageCodeId" + image_code_id, text, constants.IMAGE_CODE_REDIS_EXPIRES)
+            redis_store.set("imageCodeId" + image_code_id, text, constants.IMAGE_CODE_REDIS_EXPIRES)
         except Exception as e:
             # 记录异常日志
             current_app.logger.error(e)
@@ -54,9 +54,14 @@ def send_sms_code():
     3、图码不符合返回提示信息
     4、图码符合--生成短信码内容、发送短信码、提示发送结果
     """
+    # 测试、默认成功
+    # print("调用")
+    # return jsonify(errno=RET.OK, errmsg="发送成功")
+
     # 0、获取参数字典(手机号、图码内容、图码编号-所有参数以json格式传送)
-    # params_dict = json.loads(request.data)
-    params_dict = request.json
+    params_dict = json.loads(request.data)
+    # params_dict = request.json
+    print(params_dict)
     mobile = params_dict["mobile"]
     image_code = params_dict["image_code"]
     image_code_id = params_dict["image_code_id"]
