@@ -51,8 +51,12 @@ def create_app(config_name):
     # 设置session保存指定位置
     Session(app)
 
-    # 蓝图注册时导入
+    # 蓝图注册时再导入
     from info.moudles.index import index_blu
     # 注册蓝图
     app.register_blueprint(index_blu)
+
+    # 注册登录模块蓝图
+    from info.moudles.passport import passport_blu
+    app.register_blueprint(passport_blu)
     return app
