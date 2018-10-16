@@ -1,6 +1,7 @@
-"""视图函数"""
+"""创建根路由、模板文件夹"""
 from info import redis_store
 from . import index_blu
+from flask import render_template
 
 
 # 注册路由
@@ -8,4 +9,4 @@ from . import index_blu
 def index():
     redis_store.set('sam_smith', 'billy')
 
-    return 'index'
+    return render_template('news/index.html')
