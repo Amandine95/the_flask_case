@@ -4,8 +4,9 @@ import re
 
 from flask import request, abort, current_app, make_response, json, jsonify
 
-from info import redis_store, constants
+from info import redis_store, constants, db
 from info.libs.yuntongxun.sms import CCP
+from info.models import User
 
 from info.utils.captcha.captcha import captcha
 from info.utils.response_code import RET
@@ -95,9 +96,67 @@ def send_sms_code():
         return jsonify(errno=RET.THIRDERR, errmsg="第三方发送失败")
     # 保存短信码在redis里
     try:
+        # 验证码设置保存时间300s
         redis_store.set("sms" + mobile, sms_code_str, constants.SMS_CODE_REDIS_EXPIRES)
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg="数据库保存失败")
     # 提示结果(之前需要保存短信码在redis)
     return jsonify(errno=RET.OK, errmsg="发送成功")
+
+
+@passport_blu.route('/register', methods=["POST"])
+def register():
+    """
+    注册
+    1、获取参数(从表单获取)、并判断是否为空
+    2、读取redis存储的验证码进行比对
+    3、比对通过初始化user模型，并添加数据到数据库
+    4、保持当前状态(session)
+    5、返回注册结果
+    6、注意：此时不需要图片验证码及手机号规则校验
+    """
+    # 1、获取参数
+    params_dict = request.json
+    mobile = params_dict.get('mobile')
+    smscode = params_dict.get('smscode')
+    password = params_dict.get('password')
+    # 校验参数
+    # 是否为空
+    if not all([mobile, smscode, password]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不能为空")
+    # 2、获取redis存储
+    try:
+        real_sms_code = redis_store.get("sms" + mobile).decode('utf-8')
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库读取失败")
+    if not real_sms_code:
+        return jsonify(errno=RET.NODATA, errmsg="手机号错误或验证码过期")
+    if smscode != real_sms_code:
+        return jsonify(errno=RET.DATAERR, errmsg="短信验证码输入错误")
+    # 3、初始化user模型，赋值属性
+    user = User()
+    user.mobile = mobile
+    # 手机号暂代昵称
+    user.nick_name = mobile
+    # 最后登陆时间
+    from datetime import datetime
+    user.last_login = datetime.now()
+    # todo 密码加密
+    # 添加数据到数据库
+    try:
+        db.Session.add(user)
+        db.Session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        # 异常回滚
+        db.Session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg="数据库写入失败")
+    # 4、创建session用来保持状态(登录)
+    from flask import session
+    session["user_id"] = user.id
+    session["mobile"] = user.mobile
+    session["nick_name"] = user.nick_name
+    # 5、返回成功响应
+    return jsonify(errno=RET.OK, errmsg="注册成功")
