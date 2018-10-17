@@ -117,7 +117,7 @@ $(function () {
 
     // TODO 注册按钮点击
     $(".register_form_con").submit(function (e) {
-        // 阻止默认提交操作
+        // 阻止默认提交操作,用ajax实现功能,局部刷新能够控制。form表单提交脱离控制
         e.preventDefault()
 
         // 取到用户输入的内容
@@ -144,8 +144,35 @@ $(function () {
             $("#register-password-err").show();
             return;
         }
+        准备参数,json格式对象
+        var params = {
+            "mobile":mobile,
+            "smscode":smscode,
+            "password":password
+
+        }
 
         // 发起注册请求
+        $.ajax({
+            url:"/passport/register",
+            type:"post",
+            data:JSON.stringify(params),
+            contentType:"application/json",
+            success:function(response){
+                if(response.errno=="0"){
+                //    注册成功
+
+                }else{
+                //    注册失败
+                    alert(response.errmsg)
+                    $("#register-password-err").html(response.errmsg);
+                    $("#register-password-err").show();
+
+
+                }
+
+            }
+        })
 
     })
 })
@@ -197,7 +224,7 @@ function sendSMSCode() {
     $.ajax({
         //请求地址
         url: "/passport/sms_code",
-        //请求方式(???post报错405，改成get)
+        //请求方式
         type: "post",
         //对请求参数,对象转为字符串
         data: JSON.stringify(params),

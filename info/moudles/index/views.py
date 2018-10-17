@@ -17,5 +17,5 @@ def index():
 def favicon():
     """查找发送页签图标"""
     # current_app应用上下文变量，表示当前应用
-    # send_static_file是flask查找指定静态文件的方法
+    # send_static_file是flask查找指定静态文件的方法，浏览器自动请求小图标
     return current_app.send_static_file('news/favicon.ico')

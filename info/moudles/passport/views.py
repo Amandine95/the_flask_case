@@ -4,9 +4,8 @@ import re
 
 from flask import request, abort, current_app, make_response, json, jsonify
 
-from info import redis_store, constants, db
+from info import redis_store, constants
 from info.libs.yuntongxun.sms import CCP
-from info.models import User
 
 from info.utils.captcha.captcha import captcha
 from info.utils.response_code import RET
@@ -45,7 +44,7 @@ def get_image_code():
         return response
 
 
-@passport_blu.route('/sms_code')
+@passport_blu.route('/sms_code', methods=['POST'])
 def send_sms_code():
     """
     发送短信验证码
@@ -56,16 +55,16 @@ def send_sms_code():
     4、图码符合--生成短信码内容、发送短信码、提示发送结果
     """
     # 测试、默认成功
-    # print("调用")
     # return jsonify(errno=RET.OK, errmsg="发送成功")
 
     # 0、获取参数字典(手机号、图码内容、图码编号-所有参数以json格式传送)
+    # print(request)
     params_dict = json.loads(request.data)
     # params_dict = request.json
-    print(params_dict)
-    mobile = params_dict["mobile"]
-    image_code = params_dict["image_code"]
-    image_code_id = params_dict["image_code_id"]
+    mobile = params_dict.get('mobile')
+    image_code = params_dict.get('image_code')
+    # print('1',image_code)
+    image_code_id = params_dict.get('image_code_id')
     # 1、校验参数(有值、符合规则)
     # 是否有值
     if not all([mobile, image_code, image_code_id]):
@@ -76,7 +75,8 @@ def send_sms_code():
         return jsonify(errno=RET.PARAMERR, errmsg="手机号不合法")
     # 2、从redis中读取保存的图码内容
     try:
-        real_image_code = redis_store.get('ImageCodeId' + image_code_id)
+        real_image_code = redis_store.get('imageCodeId' + image_code_id).decode('utf-8')
+        # print('2',real_image_code)
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
@@ -96,7 +96,6 @@ def send_sms_code():
         return jsonify(errno=RET.THIRDERR, errmsg="第三方发送失败")
     # 保存短信码在redis里
     try:
-        # 验证码设置保存时间300s
         redis_store.set("sms" + mobile, sms_code_str, constants.SMS_CODE_REDIS_EXPIRES)
     except Exception as e:
         current_app.logger.error(e)
@@ -145,18 +144,18 @@ def register():
     user.last_login = datetime.now()
     # todo 密码加密
     # 添加数据到数据库
-    try:
-        db.Session.add(user)
-        db.Session.commit()
-    except Exception as e:
-        current_app.logger.error(e)
-        # 异常回滚
-        db.Session.rollback()
-        return jsonify(errno=RET.DBERR, errmsg="数据库写入失败")
-    # 4、创建session用来保持状态(登录)
-    from flask import session
-    session["user_id"] = user.id
-    session["mobile"] = user.mobile
-    session["nick_name"] = user.nick_name
+    # try:
+    #     db.Session.add(user)
+    #     db.Session.commit()
+    # except Exception as e:
+    #     current_app.logger.error(e)
+    #     # 异常回滚
+    #     db.Session.rollback()
+    #     return jsonify(errno=RET.DBERR, errmsg="数据库写入失败")
+    # # 4、创建session用来保持状态(登录)
+    # from flask import session
+    # session["user_id"] = user.id
+    # session["mobile"] = user.mobile
+    # session["nick_name"] = user.nick_name
     # 5、返回成功响应
     return jsonify(errno=RET.OK, errmsg="注册成功")
