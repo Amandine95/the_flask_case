@@ -4,8 +4,9 @@ import re
 
 from flask import request, abort, current_app, make_response, json, jsonify
 
-from info import redis_store, constants
+from info import redis_store, constants, db
 from info.libs.yuntongxun.sms import CCP
+from info.models import User
 
 from info.utils.captcha.captcha import captcha
 from info.utils.response_code import RET
@@ -142,20 +143,22 @@ def register():
     # 最后登陆时间
     from datetime import datetime
     user.last_login = datetime.now()
-    # todo 密码加密
+    # 密码加密
+    # 设置password时，对password加密，并将加密结果给user.password_hash
+    user.password = password
     # 添加数据到数据库
-    # try:
-    #     db.Session.add(user)
-    #     db.Session.commit()
-    # except Exception as e:
-    #     current_app.logger.error(e)
-    #     # 异常回滚
-    #     db.Session.rollback()
-    #     return jsonify(errno=RET.DBERR, errmsg="数据库写入失败")
-    # # 4、创建session用来保持状态(登录)
-    # from flask import session
-    # session["user_id"] = user.id
-    # session["mobile"] = user.mobile
-    # session["nick_name"] = user.nick_name
+    try:
+        db.Session.add(user)
+        db.Session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        # 异常回滚
+        db.Session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg="数据库写入失败")
+    # 4、创建session用来保持状态(登录)
+    from flask import session
+    session["user_id"] = user.id
+    session["mobile"] = user.mobile
+    session["nick_name"] = user.nick_name
     # 5、返回成功响应
     return jsonify(errno=RET.OK, errmsg="注册成功")

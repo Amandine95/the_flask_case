@@ -144,7 +144,7 @@ $(function () {
             $("#register-password-err").show();
             return;
         }
-        准备参数,json格式对象
+        // 准备参数,json格式对象
         var params = {
             "mobile":mobile,
             "smscode":smscode,
