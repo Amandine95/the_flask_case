@@ -32,6 +32,7 @@ def get_image_code():
     else:
         # 生成验证码，调用captcha模块的generate_captcha方法
         name, text, image = captcha.generate_captcha()
+        print(text)
         # 保存图片验证码内容到redis
         try:
             redis_store.set("imageCodeId" + image_code_id, text, constants.IMAGE_CODE_REDIS_EXPIRES)
@@ -148,12 +149,12 @@ def register():
     user.password = password
     # 添加数据到数据库
     try:
-        db.Session.add(user)
-        db.Session.commit()
+        db.session.add(user)
+        db.session.commit()
     except Exception as e:
         current_app.logger.error(e)
         # 异常回滚
-        db.Session.rollback()
+        db.session.rollback()
         return jsonify(errno=RET.DBERR, errmsg="数据库写入失败")
     # 4、创建session用来保持状态(登录)
     from flask import session

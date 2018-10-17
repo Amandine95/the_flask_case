@@ -55,60 +55,55 @@ class User(BaseModel, db.Model):
                                 backref=db.backref('followed', lazy='dynamic'),
                                 lazy='dynamic')
 
+    """
+    以下方法：1、装饰器的应用
+            2、generate_password_hash加密
+               check_password_hash核对加密的密码
+    """
+
+    # 装饰器，将password方法变得和属性一样，可以像属性一样调用
+
+    @property
+    def password(self):
+        """尝试获取明文密码时抛出异常"""
+        raise AttributeError("当前属性不可读")
+
+    # 执行user.password=password时将password作为value传给该方法
+    @password.setter
+    def password(self, value):
+        """设置password属性时调用该方法"""
+        # 进行密码加密
+        self.password_hash = generate_password_hash(value)
+
+    # def check_password(self, password):
+    #     """核对密码"""
+    #     return check_password_hash(self.password_hash, password)
+
     # 当前用户所发布的新闻
     news_list = db.relationship('News', backref='user', lazy='dynamic')
 
+    def to_dict(self):
+        resp_dict = {
+            "id": self.id,
+            "nick_name": self.nick_name,
+            "avatar_url": constants.QINIU_DOMIN_PREFIX + self.avatar_url if self.avatar_url else "",
+            "mobile": self.mobile,
+            "gender": self.gender if self.gender else "MAN",
+            "signature": self.signature if self.signature else "",
+            "followers_count": self.followers.count(),
+            "news_count": self.news_list.count()
+        }
+        return resp_dict
 
-"""
-以下方法：1、装饰器的应用
-        2、generate_password_hash加密
-           check_password_hash核对加密的密码
-"""
-# 装饰器，将password方法变得和属性一样，可以像属性一样调用
-
-
-@property
-def password(self):
-    """尝试获取明文密码时抛出异常"""
-    raise AttributeError("当前属性不可读")
-
-
-# 执行user.password=password时将password作为value传给该方法
-@password.setter
-def password(self, value):
-    """设置password属性时调用该方法"""
-    # 进行密码加密
-    self.password_hash = generate_password_hash(value)
-
-
-# def check_password(self, password):
-#     """核对密码"""
-#     return check_password_hash(self.password_hash, password)
-
-
-def to_dict(self):
-    resp_dict = {
-        "id": self.id,
-        "nick_name": self.nick_name,
-        "avatar_url": constants.QINIU_DOMIN_PREFIX + self.avatar_url if self.avatar_url else "",
-        "mobile": self.mobile,
-        "gender": self.gender if self.gender else "MAN",
-        "signature": self.signature if self.signature else "",
-        "followers_count": self.followers.count(),
-        "news_count": self.news_list.count()
-    }
-    return resp_dict
-
-
-def to_admin_dict(self):
-    resp_dict = {
-        "id": self.id,
-        "nick_name": self.nick_name,
-        "mobile": self.mobile,
-        "register": self.create_time.strftime("%Y-%m-%d %H:%M:%S"),
-        "last_login": self.last_login.strftime("%Y-%m-%d %H:%M:%S"),
-    }
-    return resp_dict
+    def to_admin_dict(self):
+        resp_dict = {
+            "id": self.id,
+            "nick_name": self.nick_name,
+            "mobile": self.mobile,
+            "register": self.create_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "last_login": self.last_login.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return resp_dict
 
 
 class News(BaseModel, db.Model):

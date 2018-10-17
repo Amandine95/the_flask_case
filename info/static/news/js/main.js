@@ -160,7 +160,8 @@ $(function () {
             contentType:"application/json",
             success:function(response){
                 if(response.errno=="0"){
-                //    注册成功
+                //    注册成功，代表登陆成功,定位到当前页面
+                    location.reload()
 
                 }else{
                 //    注册失败
