@@ -197,7 +197,7 @@ function sendSMSCode() {
     $.ajax({
         //请求地址
         url: "/passport/sms_code",
-        //请求方式(???post报错405，改成get)
+        //请求方式(报错500，后端获取request.data  is none???)
         type: "post",
         //对请求参数,对象转为字符串
         data: JSON.stringify(params),
