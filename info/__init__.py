@@ -15,6 +15,7 @@ from config import config_dict
 db = SQLAlchemy()
 # type设置变量注释后可以智能提示
 redis_store = None  # type:StrictRedis
+# redis_store:StrictRedis=None
 
 
 def setup_log(config_name):

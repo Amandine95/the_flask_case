@@ -75,9 +75,9 @@ class User(BaseModel, db.Model):
         # 进行密码加密
         self.password_hash = generate_password_hash(value)
 
-    # def check_password(self, password):
-    #     """核对密码"""
-    #     return check_password_hash(self.password_hash, password)
+    def check_password(self, password):
+        """核对密码"""
+        return check_password_hash(self.password_hash, password)
 
     # 当前用户所发布的新闻
     news_list = db.relationship('News', backref='user', lazy='dynamic')

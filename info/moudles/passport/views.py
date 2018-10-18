@@ -2,7 +2,7 @@
 import random
 import re
 
-from flask import request, abort, current_app, make_response, json, jsonify
+from flask import request, abort, current_app, make_response, json, jsonify, session
 
 from info import redis_store, constants, db
 from info.libs.yuntongxun.sms import CCP
@@ -163,3 +163,44 @@ def register():
     session["nick_name"] = user.nick_name
     # 5、返回成功响应
     return jsonify(errno=RET.OK, errmsg="注册成功")
+
+
+@passport_blu.route('/login')
+def login():
+    """
+    登录
+    1、获取参数
+    2、校验参数
+    3、校验密码
+    4、保存登录状态
+    5、返回结果
+    """
+    # 1、获取参数
+    params_dict = request.json
+    mobile = params_dict.get('mobile')
+    password = params_dict.get('password')
+    # 2、校验参数
+    if not all([mobile, password]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不能为空")
+    # 手机号规则校验
+    if not re.match('^1[35678]\\d{9}$', mobile):
+        return jsonify(errno=RET.PARAMERR, errmsg="手机号不合法")
+    # 查询数据库是否有该手机号
+    try:
+        user = User.query.filter(User.mobile == mobile).first()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
+    # 用户不存在
+    if not user:
+        return jsonify(errno=RET.NODATA, errmsg="用户不存在")
+    # 3、校验密码
+    # 调用models里的check_password方法。(明文密码传入和加密密码比对)
+    if not user.check_password(password):
+        return jsonify(errno=RET.PWDERR, errmsg="密码或用户名错误")
+    # 4、保持登陆状态(创建session)
+    session["user_id"] = user.id
+    session["mobile"] = user.mobile
+    session["nick_name"] = user.nick_name
+    # 5、返回结果
+    return jsonify(errno=RET.OK, errmsg="登陆成功")
