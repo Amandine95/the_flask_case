@@ -1,6 +1,6 @@
 """添加网页页签图片的路由，这个请求路径是固定的  /文件名 """
 from info import redis_store
-from info.models import User
+from info.models import User, News
 from . import index_blu
 from flask import render_template, current_app, session
 
@@ -23,10 +23,24 @@ def index():
             user = User.query.get(user_id)
         except Exception as e:
             current_app.logger.error(e)
-    # user有值，执行user.to_dict()；如果user没有值，将None给"user"
+
+    # 右侧排行榜逻辑(查询数据库新闻点击量，大到小排序，取出前六)
+    news_list = []
+    try:
+        # 数据库取出的是对象列表，要将对象转换为dict
+        news_list = News.query.order_by(News.clicks.desc()).limit(6)
+    except Exception as e:
+        current_app.logger.error(e)
+    # 新闻字典列表
+    news_dict_list = []
+    for news in news_list:
+        news_dict_list.append(news.to_basic_dict())
+        # user有值，执行user.to_dict()；如果user没有值，将None给"user"
     data = {
-        "user": user.to_dict() if user else None
+        "user": user.to_dict() if user else None,
+        "news_dict_list": news_dict_list
     }
+
     # 渲染模板
     return render_template('news/index.html', data=data)
 
