@@ -15,6 +15,8 @@ class Config(object):
     # 添加数据库配置
     SQLALCHEMY_DATABASE_URI = 'mysql://root:950324lyx@127.0.0.1:3306/information_flask'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # 该值为True时，自动进行db.session.commit()
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     # 配置redis
     REDIS_HOST = '127.0.0.1'
     REDIS_PORT = 6379

@@ -1,6 +1,7 @@
 """登录注册视图函数"""
 import random
 import re
+from datetime import datetime
 
 from flask import request, abort, current_app, make_response, json, jsonify, session
 
@@ -141,8 +142,7 @@ def register():
     user.mobile = mobile
     # 手机号暂代昵称
     user.nick_name = mobile
-    # 最后登陆时间
-    from datetime import datetime
+    # 注册时的最后登陆时间
     user.last_login = datetime.now()
     # 密码加密
     # 设置password时，对password加密，并将加密结果给user.password_hash
@@ -202,6 +202,16 @@ def login():
     session["user_id"] = user.id
     session["mobile"] = user.mobile
     session["nick_name"] = user.nick_name
+    # 4.1、设置用户最后一次登陆时间(修改数据库属性，需要commit)
+    user.last_login = datetime.now()
+    # try:
+    #     db.session.commit()
+    # except Exception as e:
+    #     db.session.rollback()
+    #     current_app.logger.error(e)
+    # 4.2、视图函数中对数据库模型的属性做了修改，必须commit。另外基于SQLALchemy的
+    # 一些设置可以实现自动提交，不用手动commit
+
     # 5、返回结果
     return jsonify(errno=RET.OK, errmsg="登陆成功")
 
