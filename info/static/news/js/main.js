@@ -296,6 +296,13 @@ function sendSMSCode() {
 
 
 }
+function logout() {
+    $.get('/passport/logout',function(response){
+        location.reload()
+
+    })
+    
+}
 
 // 调用该函数模拟点击左侧按钮
 function fnChangeMenu(n) {

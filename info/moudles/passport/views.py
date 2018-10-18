@@ -204,3 +204,16 @@ def login():
     session["nick_name"] = user.nick_name
     # 5、返回结果
     return jsonify(errno=RET.OK, errmsg="登陆成功")
+
+
+@passport_blu.route('/logout')
+def logout():
+    """
+    退出
+    0、pop清除session数据
+    1、移除的key不存在，pop返回none
+    """
+    session.pop('user_id', None)
+    session.pop('mobile', None)
+    session.pop('nick_name', None)
+    return jsonify(errno=RET.OK, errmsg="退出成功")

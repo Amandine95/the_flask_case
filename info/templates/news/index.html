@@ -29,7 +29,8 @@
                 <!-- 显示头像 -->
                 <img src="{% if data.user.avatar_url %}{{ data.user.avatar_url }}{% else %}../../static/news/images/person01.png{% endif %}" class="lgin_pic">
                 <a href="#">{{ data.user.nick_name }}</a>
-                <a href="#">退出</a>
+                <!-- 给a标签添加点击事件(退出功能)，执行js代码，js代码则去调用后端的logout视图函数 -->
+                <a href="javascript:;" onclick="logout()">退出</a>
             </div>
             {% else %}
             <!--登录失败显示下面-->
