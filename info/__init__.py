@@ -8,6 +8,7 @@ from flask import Flask
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
+from flask_wtf.csrf import generate_csrf
 from redis import StrictRedis
 
 from config import config_dict
@@ -15,6 +16,8 @@ from config import config_dict
 db = SQLAlchemy()
 # type设置变量注释后可以智能提示
 redis_store = None  # type:StrictRedis
+
+
 # redis_store:StrictRedis=None
 
 
@@ -48,9 +51,22 @@ def create_app(config_name):
     # redis赋值，此处用于在业务逻辑中的存储
     redis_store = StrictRedis(host=config_dict[config_name].REDIS_HOST, port=config_dict[config_name].REDIS_PORT)
     # 开启当前项目CSRF保护,只做服务器验证
-    # CSRFProtect(app)
+    # CSRFProtect实现功能：从cookie、表单中取出随机值校验，返回结果。
+    # 需要实现：1、界面加载时，添加一个csrf_token到cookie中；2、添加同样的csrf_token到表单
+    # 登录注册用ajax请求，对于第二步让ajax请求时headers带上crsf_token。
+
+    CSRFProtect(app)
     # 设置session保存指定位置
     Session(app)
+
+    # 响应时设置cookie，全局多处设置cookie，所以用请求钩子after_request设置csrf_token
+    @app.after_request
+    def after_request(response):
+        # 设置随机的csrf_token值
+        csrf_token = generate_csrf()
+        # 设置一个cookie
+        response.set_cookie("csrf_token", csrf_token)
+        return response
 
     # 蓝图注册时再导入
     from info.moudles.index import index_blu

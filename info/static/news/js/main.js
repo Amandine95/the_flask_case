@@ -182,6 +182,10 @@ $(function () {
             url:"/passport/register",
             type:"post",
             data:JSON.stringify(params),
+            //在headers添加csrf_token随机值
+            headers:{
+            "X-CSRFToken":getCookie('csrf_token')
+            },
             contentType:"application/json",
             success:function(response){
                 if(response.errno=="0"){
@@ -252,6 +256,10 @@ function sendSMSCode() {
         url: "/passport/sms_code",
         //请求方式
         type: "post",
+        //在headers添加csrf_token随机值
+        headers:{
+            "X-CSRFToken":getCookie('csrf_token')
+        },
         //对请求参数,对象转为字符串
         data: JSON.stringify(params),
         //请求参数数据类型
