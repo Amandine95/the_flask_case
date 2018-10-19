@@ -1,6 +1,6 @@
 """添加网页页签图片的路由，这个请求路径是固定的  /文件名 """
 from info import redis_store, constants
-from info.models import User, News
+from info.models import User, News, Category
 from info.utils.response_code import RET
 from . import index_blu
 from flask import render_template, current_app, session, request, jsonify
@@ -36,10 +36,22 @@ def index():
     news_dict_list = []
     for news in news_list:
         news_dict_list.append(news.to_basic_dict())
-        # user有值，执行user.to_dict()；如果user没有值，将None给"user"
+
+    # 访问根路由时，查询新闻分类，通过模板渲染
+    categories = None
+    try:
+        categories = Category.query.all()
+    except Exception as e:
+        current_app.logger.error(e)
+    category_list = []
+    for category in categories:
+        category_list.append(category.to_dict())
+
     data = {
+        # user有值，执行user.to_dict()；如果user没有值，将None给"user"
         "user": user.to_dict() if user else None,
-        "news_dict_list": news_dict_list
+        "news_dict_list": news_dict_list,
+        "category_list": category_list
     }
 
     # 渲染模板

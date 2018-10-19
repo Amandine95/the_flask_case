@@ -10,9 +10,11 @@ $(function () {
     // 首页分类切换
     $('.menu li').click(function () {
         var clickCid = $(this).attr('data-cid')
+        //遍历所有li，去除选中效果
         $('.menu li').each(function () {
             $(this).removeClass('active')
         })
+        //当前li添加选中效果
         $(this).addClass('active')
 
         if (clickCid != currentCid) {
