@@ -1,7 +1,7 @@
 var currentCid = 1; // 当前分类 id
 var cur_page = 1; // 当前页
 var total_page = 1;  // 总页数
-var data_querying = true;   // 是否正在向后台获取数据
+var data_querying = true;   // 是否正在向后台获取数据(加载标志)
 
 
 $(function () {
@@ -42,7 +42,22 @@ $(function () {
         var nowScroll = $(document).scrollTop();
 
         if ((canScrollHeight - nowScroll) < 100) {
-            // TODO 判断页数，去更新新闻数据
+            // 判断页数，去更新新闻数据
+        //    如果没有正在向后台请求数据，就加载数据
+            if(!data_querying){
+                data_querying=true
+                //当前页数小于总页数，则加载
+                if (cur_page<total_page){
+                     //    当前页数加1
+                    cur_page+=1
+                //    加载数据
+                    updateNewsData()
+
+                }
+
+
+            }
+
         }
     })
 })
@@ -54,9 +69,18 @@ function updateNewsData() {
         "page":cur_page
     }
     $.get('/news_list',params,function(response){
+        //请求成功后，数据加载完毕，将加载标志改为false，表示当前没有在请求数据
+        data_querying=false
         if (response.errno=="0"){
-        //    请求成功:1、清除html已有数据(js操作)
-            $(".list_con").html("")
+        //    总页数
+            total_page=response.data.total_page
+
+        //    请求成功:1、当前页面为 1 时清除html已有数据(js操作)
+            if(cur_page==1){
+                $(".list_con").html("")
+
+            }
+
         //    2、添加请求返回的数据
              for (var i=0;i<response.data.news_dict_list.length;i++) {
                 var news = response.data.news_dict_list[i]
