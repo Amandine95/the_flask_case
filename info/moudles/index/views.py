@@ -1,13 +1,15 @@
 """添加网页页签图片的路由，这个请求路径是固定的  /文件名 """
 from info import redis_store, constants
 from info.models import User, News, Category
+from info.utils.commmon import user_login_data
 from info.utils.response_code import RET
 from . import index_blu
-from flask import render_template, current_app, session, request, jsonify
+from flask import render_template, current_app, session, request, jsonify, g
 
 
 # 注册路由
 @index_blu.route('/')
+@user_login_data
 def index():
     """
     返回主页(登陆后状态显示)
@@ -16,14 +18,17 @@ def index():
     2、未登录，查询不到数据，显示默认
     """
     # 获取session数据
-    user_id = session.get('user_id', None)
-    user = None
-    if user_id:
-        try:
-            # 查询数据库
-            user = User.query.get(user_id)
-        except Exception as e:
-            current_app.logger.error(e)
+    # user_id = session.get('user_id', None)
+    # user = None
+    # if user_id:
+    #     try:
+    #         # 查询数据库
+    #         user = User.query.get(user_id)
+    #     except Exception as e:
+    #         current_app.logger.error(e)
+
+    # 从g变量中取出用户信息
+    user = g.user
 
     # 右侧排行榜逻辑(查询数据库新闻点击量，大到小排序，取出前六(可通过修改常量改变))
     news_list = []

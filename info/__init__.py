@@ -12,7 +12,7 @@ from flask_wtf.csrf import generate_csrf
 from redis import StrictRedis
 
 from config import config_dict
-from info.utils.commmon import do_index_class
+
 
 db = SQLAlchemy()
 # type设置变量注释后可以智能提示
@@ -60,7 +60,8 @@ def create_app(config_name):
     # 设置session保存指定位置
     Session(app)
 
-    # 添加过滤器
+    # 导入并添加过滤器
+    from info.utils.commmon import do_index_class
     app.add_template_filter(do_index_class, "index_class")
 
     # 响应时设置cookie，全局多处设置cookie，所以用请求钩子after_request设置csrf_token
