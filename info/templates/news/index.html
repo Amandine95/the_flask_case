@@ -96,8 +96,8 @@
             </div>
             <ul class="rank_list">
                 {% for news in data.news_dict_list %}
-                    {# loop.index 当前循环的索引#}
-                    <li><span>{{ loop.index }}</span><a href="#">{{ news.title }}</a></li>
+                    {# loop.index 当前循环的索引, index_class 过滤器#}
+                    <li><span class="{{ loop.index0|index_class }}">{{ loop.index }}</span><a href="#">{{ news.title }}</a></li>
 
                 {% endfor %}
 {#                <li><span class="first">1</span><a href="#">势如破竹！人民币再度连闯四道关口 在岸、离岸双双升破6.42</a></li>#}
