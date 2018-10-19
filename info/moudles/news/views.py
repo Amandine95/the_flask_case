@@ -8,5 +8,8 @@ def news_detail(news_id):
     """
     获取新闻详情
     """
-    pass
-    return render_template("news/detail.html")
+    # 传递data，详情页继承于base页面，base中需要用到data变量所以传入data
+    data = {
+
+    }
+    return render_template("news/detail.html", data=data)
