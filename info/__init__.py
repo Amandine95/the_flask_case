@@ -80,4 +80,7 @@ def create_app(config_name):
     # 注册登录模块蓝图
     from info.moudles.passport import passport_blu
     app.register_blueprint(passport_blu)
+    # 新闻详情蓝图
+    from info.moudles.news import news_blu
+    app.register_blueprint(news_blu)
     return app
