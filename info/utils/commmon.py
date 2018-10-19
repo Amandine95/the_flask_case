@@ -21,6 +21,7 @@ def do_index_class(index):
 # (项目多处需要查询用户数据)定义装饰器(闭包)装饰视图函数来进行用户信息查询。
 # func 为被装饰函数 也就是 视图函数
 def user_login_data(func):
+    # functools.wraps装饰内层函数，能够使装饰器装饰的函数的__name__不变(flask中不同路由指向同一个函数报错)
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         """用户信息查询"""

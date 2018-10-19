@@ -1,9 +1,10 @@
-from flask import render_template, session, current_app, g
+from flask import render_template, session, current_app, g, jsonify, abort
 
 from info import constants
 from info.models import User, News, Category
 from info.moudles.news import news_blu
 from info.utils.commmon import user_login_data
+from info.utils.response_code import RET
 
 
 @news_blu.route('/<int:news_id>')
@@ -43,10 +44,24 @@ def news_detail(news_id):
     category_list = []
     for category in categories:
         category_list.append(category.to_dict())
+
+    # 查询新闻数据
+    news = None
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+    # 未查到抛出404
+    if not news:
+        abort(404)
+    # 更新新闻点击次数
+    news.clicks += 1
     # 传递data，详情页继承于base页面，base中需要用到data变量所以传入data
     data = {
         "user": user.to_dict() if user else None,
-        "news_dict_list": news_dict_list
+        "news_dict_list": news_dict_list,
+        "news": news.to_dict()
 
     }
+    # print(news.to_dict())
     return render_template("news/detail.html", data=data)
