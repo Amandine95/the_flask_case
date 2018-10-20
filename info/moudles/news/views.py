@@ -60,7 +60,11 @@ def news_detail(news_id):
     # 是否收藏标志
     is_collected = False
 
-    # 判断是否收藏
+    # (用户登录后)判断是否收藏
+    if user:
+        # lazy=dynamic 让 sqlalchemy在使用时自动加载，不需要.all()去加载
+        if news in user.collection_news:
+            is_collected = True
 
     # 传递data，详情页继承于base页面，base中需要用到data变量所以传入data
     data = {
