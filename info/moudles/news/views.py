@@ -1,7 +1,7 @@
 from flask import render_template, session, current_app, g, jsonify, abort, request
 
-from info import constants
-from info.models import User, News, Category
+from info import constants, db
+from info.models import User, News, Category, Comment
 from info.moudles.news import news_blu
 from info.utils.commmon import user_login_data
 from info.utils.response_code import RET
@@ -120,3 +120,53 @@ def collect_news():
         if news in user.collection_news:
             user.collection_news.remove(news)
     return jsonify(errno=RET.OK, errmsg="收藏成功")
+
+
+@news_blu.route('/news_comment', methods=['post'])
+@user_login_data
+def comment_news():
+    """新闻评论"""
+    user = g.user
+    # 1、判断登录
+    if not user:
+        return jsonify(errno=RET.USERERR, errmsg="用户未登录")
+    # 2、获取参数
+    news_id = request.json.get('news_id')
+    comment = request.json.get('comment')
+    parent_id = request.json.get('parent_id')
+    # 3、参数校验
+    if not all([news_id, comment, parent_id]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    # 校验数据类型
+    try:
+        news_id = int(news_id)
+        if parent_id:
+            parent_id = int(parent_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    # 查询数据库
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
+    if not news:
+        return jsonify(errno=RET.NODATA, errmsg="没有该新闻")
+    # 4、初始化数据库模型，存储数据(插入一条评论记录)
+    comment = Comment()
+    comment.news_id = news_id
+    comment.user_id = user.id
+    comment.content = comment
+    if parent_id:
+        comment.parent_id = parent_id
+    try:
+        # 添加记录到数据库
+        db.session.add(comment)
+        # 自动提交在return之后，这里需要返回comment,所以在return之前手动commit
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库错误")
+    # 返回结果，前端需要获取评论相关信息  传入data
+    return jsonify(errno=RET.OK, errmag="评论成功", data=comment.to_dict())

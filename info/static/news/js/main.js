@@ -305,7 +305,9 @@ function sendSMSCode() {
 
 }
 function logout() {
+    //$.get() 是get请求方式的ajax的简写  $.post()
     $.get('/passport/logout',function(response){
+        //刷新当前页面
         location.reload()
 
     })
