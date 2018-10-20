@@ -195,7 +195,7 @@ def login():
     if not user:
         return jsonify(errno=RET.NODATA, errmsg="用户不存在")
     # 3、校验密码
-    # 调用models里的check_password方法。(明文密码传入和加密密码比对)
+    # 调用user对象的check_password方法。(明文密码传入和加密密码比对)
     if not user.check_password(password):
         return jsonify(errno=RET.PWDERR, errmsg="密码或用户名错误")
     # 4、保持登陆状态(创建session)
