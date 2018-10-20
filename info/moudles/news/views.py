@@ -1,4 +1,4 @@
-from flask import render_template, session, current_app, g, jsonify, abort
+from flask import render_template, session, current_app, g, jsonify, abort, request
 
 from info import constants
 from info.models import User, News, Category
@@ -76,3 +76,47 @@ def news_detail(news_id):
     }
     # print(news.to_dict())
     return render_template("news/detail.html", data=data)
+
+
+@news_blu.route('/news_collect', methods=['post'])
+@user_login_data
+def collect_news():
+    """新闻收藏"""
+    user = g.user
+    # 判断用户是否登录
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg="用户未登录")
+    # 1、获取参数(新闻id、操作类型action)
+    news_id = request.json.get('news_id')
+    action = request.json.get('action')
+    # 2、校验参数
+    if not all([news_id, action]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    if action not in ["collect", "cancel_collect"]:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    try:
+        news_id = int(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    # 3、查询新闻
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
+    if not news:
+        return jsonify(errno=RET.NODATA, errmsg="未查询到新闻")
+    # 4、收藏，取消收藏(存储的是query对象)
+    # if news not in user.collection_news:
+    #     user.collection_news.append(news)
+
+    if action == 'collect':
+        # 收藏
+        if news not in user.collection_news:
+            user.collection_news.append(news)
+    else:
+        # 取消收藏
+        if news in user.collection_news:
+            user.collection_news.remove(news)
+    return jsonify(errno=RET.OK, errmsg="收藏成功")
