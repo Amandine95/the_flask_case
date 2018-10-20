@@ -49,7 +49,7 @@ def create_app(config_name):
 
     # 声明为全局变量
     global redis_store
-    # redis赋值，此处用于在业务逻辑中的存储
+    # redis赋值，此处用于在业务逻辑中的存储  decode_response = True
     redis_store = StrictRedis(host=config_dict[config_name].REDIS_HOST, port=config_dict[config_name].REDIS_PORT)
     # 开启当前项目CSRF保护,只做服务器验证
     # CSRFProtect实现功能：从cookie、表单中取出随机值校验，返回结果。

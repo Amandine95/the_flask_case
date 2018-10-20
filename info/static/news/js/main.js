@@ -260,7 +260,7 @@ function sendSMSCode() {
         headers:{
             "X-CSRFToken":getCookie('csrf_token')
         },
-        //对请求参数,对象转为字符串
+        //请求参数,json对象转为json格式的字符串
         data: JSON.stringify(params),
         //请求参数数据类型
         contentType: "application/json",

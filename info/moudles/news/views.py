@@ -56,11 +56,18 @@ def news_detail(news_id):
         abort(404)
     # 更新新闻点击次数
     news.clicks += 1
+
+    # 是否收藏标志
+    is_collected = False
+
+    # 判断是否收藏
+
     # 传递data，详情页继承于base页面，base中需要用到data变量所以传入data
     data = {
         "user": user.to_dict() if user else None,
         "news_dict_list": news_dict_list,
-        "news": news.to_dict()
+        "news": news.to_dict(),
+        "is_collected": is_collected
 
     }
     # print(news.to_dict())
