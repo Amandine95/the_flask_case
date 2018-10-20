@@ -119,6 +119,9 @@ $(function () {
         $.ajax({
             url:'/passport/login',
             type:'post',
+            headers:{
+            "X-CSRFToken":getCookie('csrf_token')
+            },
             contentType:'application/json',
             data: JSON.stringify(params),
             success:function(response){

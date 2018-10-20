@@ -132,10 +132,10 @@ def comment_news():
         return jsonify(errno=RET.USERERR, errmsg="用户未登录")
     # 2、获取参数
     news_id = request.json.get('news_id')
-    comment = request.json.get('comment')
+    comment_data = request.json.get('comment')
     parent_id = request.json.get('parent_id')
     # 3、参数校验
-    if not all([news_id, comment, parent_id]):
+    if not all([news_id, comment_data]):
         return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
     # 校验数据类型
     try:
@@ -157,7 +157,7 @@ def comment_news():
     comment = Comment()
     comment.news_id = news_id
     comment.user_id = user.id
-    comment.content = comment
+    comment.content = comment_data
     if parent_id:
         comment.parent_id = parent_id
     try:
@@ -168,5 +168,6 @@ def comment_news():
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg="数据库错误")
+    # print(comment.to_dict())
     # 返回结果，前端需要获取评论相关信息  传入data
     return jsonify(errno=RET.OK, errmag="评论成功", data=comment.to_dict())
