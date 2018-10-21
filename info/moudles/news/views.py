@@ -67,16 +67,42 @@ def news_detail(news_id):
             is_collected = True
 
     # 查询评论数据(创建时间由近及远)。
-    comments = None
+    comments = []
     try:
         # 模型列表
         comments = Comment.query.filter(Comment.news_id == news_id).order_by(Comment.create_time.desc()).all()
     except Exception as e:
         current_app.logger.error(e)
+    """
+    将该用户的全部点赞显示出来(列表推导式)：
+    1、查询该新闻的所有评论comments，获取评论的id列表
+    2、查询被点赞的评论CommentLike(条件: 评论id在1中的id  用户id为该用户id)
+    3、从2中的结果获取评论的id
+    """
+    comment_like_ids = []
+    if user:
+        try:
+            # 1
+            comment_ids = [comment.id for comment in comments]
+            # 2
+            comment_likes = CommentLike.query.filter(CommentLike.comment_id.in_(comment_ids),
+                                                     CommentLike.user_id == user.id).all()
+            # 3
+            comment_like_ids = [comment.comment_id for comment in comment_likes]
+        except Exception as e:
+            current_app.logger.error(e)
     comment_dict_list = []
     for comment in comments:
-        comment_dict_list.append(comment.to_dict())
+        comment_dict = comment.to_dict()
+        # 是否点赞标志(属性),根据被点赞的评论的id去添加这个属性
+        comment_dict["is_like"] = False
+        if comment.id in comment_like_ids:
+            comment_dict["is_like"] = True
+
+        comment_dict_list.append(comment_dict)
+
     # 传递data，详情页继承于base页面，base中需要用到data变量所以传入data
+
     data = {
         "user": user.to_dict() if user else None,
         "news_dict_list": news_dict_list,
@@ -227,7 +253,7 @@ def comment_like():
         comment_like_obj = CommentLike.query.filter(CommentLike.comment_id == comment_id,
                                                     CommentLike.user_id == user.id).first()
         if comment_like_obj:
-            # comment_like_obj.delete()
+            # comment_like_obj.delete()-->bug
             db.session.delete(comment_like_obj)
             comment.like_count -= 1
 
