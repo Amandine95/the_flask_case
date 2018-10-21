@@ -186,6 +186,7 @@ def comment_news():
 
 
 @news_blu.route('/comment_like', methods=['post'])
+@user_login_data
 def comment_like():
     """点赞、取消点赞"""
     user = g.user
@@ -193,14 +194,14 @@ def comment_like():
         return jsonify(errno=RET.USERERR, errmsg="用户未登录")
     comment_id = request.json.get('comment_id')
     action = request.json.get('action')
-    news_id = request.json.get('news_id')
-    if not all([comment_id, action, news_id]):
+    # news_id = request.json.get('news_id')
+    if not all([comment_id, action]):
         return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
     if action not in ["add", "remove"]:
         return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
     try:
         comment_id = int(comment_id)
-        news_id = int(news_id)
+        # news_id = int(news_id)
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
@@ -220,12 +221,15 @@ def comment_like():
             comment_like_obj.user_id = user.id
             comment_like_obj.comment_id = comment_id
             db.session.add(comment_like_obj)
+            comment.like_count += 1
     else:
         # 取消点赞，删除点赞模型
         comment_like_obj = CommentLike.query.filter(CommentLike.comment_id == comment_id,
                                                     CommentLike.user_id == user.id).first()
         if comment_like_obj:
-            comment_like_obj.delete()
+            # comment_like_obj.delete()
+            db.session.delete(comment_like_obj)
+            comment.like_count -= 1
 
     try:
         db.session.add(comment_like_obj)

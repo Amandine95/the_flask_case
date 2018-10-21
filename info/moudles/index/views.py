@@ -94,7 +94,7 @@ def news_list():
     if cid != 1:
         # 添加条件
         filters.append(News.category_id == cid)
-    # 按照创建时间降序排列,分页paginate
+    # 各种类型新闻按照创建时间降序排列,分页paginate
     try:
         paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page, per_page)
     except Exception as e:

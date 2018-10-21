@@ -3,7 +3,7 @@ var cur_page = 1; // 当前页
 var total_page = 1;  // 总页数
 var data_querying = true;   // 是否正在向后台获取数据(加载标志)
 
-
+//页面加载完后就调用这个回调函数
 $(function () {
     //页面加载完后加载新闻数据
     updateNewsData()
@@ -70,6 +70,7 @@ function updateNewsData() {
         "cid":currentCid,
         "page":cur_page
     }
+    //ajax 的 get 请求简写      function是请求完成后的回调函数
     $.get('/news_list',params,function(response){
         //请求成功后，数据加载完毕，将加载标志改为false，表示当前没有在请求数据
         data_querying=false
