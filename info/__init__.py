@@ -13,7 +13,6 @@ from redis import StrictRedis
 
 from config import config_dict
 
-
 db = SQLAlchemy()
 # type设置变量注释后可以智能提示
 redis_store = None  # type:StrictRedis
@@ -84,4 +83,6 @@ def create_app(config_name):
     # 新闻详情蓝图
     from info.moudles.news import news_blu
     app.register_blueprint(news_blu)
+    from info.moudles.profile import profile_blu
+    app.register_blueprint(profile_blu)
     return app
