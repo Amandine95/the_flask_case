@@ -1,4 +1,4 @@
-from flask import render_template, g, redirect, request, jsonify, current_app
+from flask import render_template, g, redirect, request, jsonify, current_app, session
 
 from info import db
 from info.models import User
@@ -39,6 +39,7 @@ def user_base_info():
         nick_name = request.json.get('nick_name')
         signature = request.json.get('signature')
         gender = request.json.get('gender')
+        print(gender)
         if not all([nick_name, signature, gender]):
             return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
         if gender not in ['MAN', 'WOMAN']:
@@ -58,4 +59,36 @@ def user_base_info():
             current_app.logger.error(e)
             return jsonify(errno=RET.DBERR, errmsg="数据库错误")
         # return render_template('news/user_base_info.html', data=data)
+        # 实时更新session数据
+        session['nick_name'] = nick_name
         return jsonify(errno=RET.OK, errmsg="操作成功")
+
+
+@profile_blu.route('/user_pic', methods=["POST", "GET"])
+@user_login_data
+def user_pic():
+    """用户头像设置"""
+    user = g.user
+    if not user:
+        return redirect('/')
+    # get请求显示默认头像
+    if request.method == "GET":
+        data = {
+            "user": user.to_dict()
+
+        }
+
+        return render_template('news/user_pic_info.html', data=data)
+    # post请求设置头像
+    if request.method == "POST":
+        avatar = request.json.get('avatar')
+        if not avatar:
+            return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+
+
+
+
+
+
+
+
