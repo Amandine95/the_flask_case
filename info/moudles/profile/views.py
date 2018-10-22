@@ -1,8 +1,9 @@
 from flask import render_template, g, redirect, request, jsonify, current_app, session
 
-from info import db
+from info import db, constants
 from info.models import User
 from info.utils.commmon import user_login_data
+from info.utils.image_storage import storage
 from info.utils.response_code import RET
 from . import profile_blu
 
@@ -81,14 +82,18 @@ def user_pic():
         return render_template('news/user_pic_info.html', data=data)
     # post请求设置头像
     if request.method == "POST":
-        avatar = request.json.get('avatar')
-        if not avatar:
+        try:
+            avatar = request.files.get('avatar').read()
+        except Exception as e:
+            current_app.logger.error(e)
             return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
-
-
-
-
-
-
-
-
+        # 七牛云存储图片
+        try:
+            # 封装的七牛云模块
+            key = storage(avatar)
+        except Exception as e:
+            current_app.logger.errro(e)
+            return jsonify(errno=RET.THIRDERR, errmsg="头像上传失败")
+        # 保存头像地址
+        user.avatar_url = key
+        return jsonify(errno=RET.OK, errmsg="上传成功", data={"avatar_url": constants.QINIU_DOMIN_PREFIX + key})
