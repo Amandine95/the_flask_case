@@ -41,13 +41,13 @@ def user_base_info():
         gender = request.json.get('gender')
         if not all([nick_name, signature, gender]):
             return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
-        if gender not in ['MAN', 'WOMEN']:
+        if gender not in ['MAN', 'WOMAN']:
             return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
         # 查询所有用户昵称,判断昵称不重复
-        user_list = User.query.all()
-        user_nick_names = [user.nick_name for user in user_list]
-        if nick_name in user_nick_names:
-            return jsonify(errno=RET.PARAMERR, errmsg="昵称被使用")
+        # user_list = User.query.all()
+        # user_nick_names = [user.nick_name for user in user_list]
+        # if nick_name in user_nick_names:
+        #     return jsonify(errno=RET.PARAMERR, errmsg="昵称被使用")
         user.nick_name = nick_name
         user.signature = signature
         user.gender = gender
@@ -57,5 +57,5 @@ def user_base_info():
             db.session.rollback()
             current_app.logger.error(e)
             return jsonify(errno=RET.DBERR, errmsg="数据库错误")
-        return render_template('news/user_base_info.html', data=data)
-    return jsonify(errno=RET.OK, errmsg="操作成功")
+        # return render_template('news/user_base_info.html', data=data)
+        return jsonify(errno=RET.OK, errmsg="操作成功")
