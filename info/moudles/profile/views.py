@@ -98,3 +98,24 @@ def user_pic():
         # 保存头像地址
         user.avatar_url = key
         return jsonify(errno=RET.OK, errmsg="上传成功", data={"avatar_url": constants.QINIU_DOMIN_PREFIX + key})
+
+
+@profile_blu.route('/user_password', methods=['POST', 'GET'])
+@user_login_data
+def user_pass():
+    """用户密码修改"""
+    user = g.user
+    if not user:
+        return redirect('/')
+    if request.method == 'GET':
+        return render_template('news/user_pass_info.html')
+    old_password = request.json.get('old_password')
+    new_password = request.json.get('new_password')
+    if not all([old_password, new_password]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    # 判断旧密码是否正确(check_password密码校验)
+    if not user.check_password(old_password):
+        return jsonify(errno=RET.PARAMERR, errmsg="旧密码输入错误")
+    # 修改模型，保存(新密码确认在前端表单校验)
+    user.password = new_password
+    return jsonify(errno=RET.OK, errmsg="修改成功")
