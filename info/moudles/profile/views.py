@@ -82,6 +82,7 @@ def user_pic():
         return render_template('news/user_pic_info.html', data=data)
     # post请求设置头像
     if request.method == "POST":
+        print('1')
         try:
             avatar = request.files.get('avatar').read()
         except Exception as e:
@@ -92,7 +93,7 @@ def user_pic():
             # 封装的七牛云模块
             key = storage(avatar)
         except Exception as e:
-            current_app.logger.errro(e)
+            current_app.logger.error(e)
             return jsonify(errno=RET.THIRDERR, errmsg="头像上传失败")
         # 保存头像地址
         user.avatar_url = key
