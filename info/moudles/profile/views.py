@@ -40,7 +40,6 @@ def user_base_info():
         nick_name = request.json.get('nick_name')
         signature = request.json.get('signature')
         gender = request.json.get('gender')
-        print(gender)
         if not all([nick_name, signature, gender]):
             return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
         if gender not in ['MAN', 'WOMAN']:
@@ -82,7 +81,6 @@ def user_pic():
         return render_template('news/user_pic_info.html', data=data)
     # post请求设置头像
     if request.method == "POST":
-        print('1')
         try:
             avatar = request.files.get('avatar').read()
         except Exception as e:
@@ -119,3 +117,34 @@ def user_pass():
     # 修改模型，保存(新密码确认在前端表单校验)
     user.password = new_password
     return jsonify(errno=RET.OK, errmsg="修改成功")
+
+
+@profile_blu.route('/user_collection')
+@user_login_data
+def user_collection():
+    """用户收藏"""
+    user = g.user
+    if not user:
+        return redirect('/')
+    # get请求，？后携带参数 页数 默认为1
+    page = request.args.get('page', 1)
+    try:
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    # 获取数据库模型paginate  三个参数  page  per_page  error_out=true/false
+    paginate = user.collection_news.paginate(page, constants.USER_COLLECTION_MAX_NEWS, False)
+    current_page = paginate.page
+    total_page = paginate.pages
+    # 模型对象列表
+    news_list = paginate.items
+    news_dict_list = []
+    for news in news_list:
+        news_dict_list.append(news.to_dict())
+    data = {
+        "current_page": current_page,
+        "total_page": total_page,
+        "news_dict_list": news_dict_list
+    }
+    return render_template('news/user_collection.html', data=data)
