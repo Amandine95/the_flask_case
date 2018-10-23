@@ -62,7 +62,8 @@ def news_detail(news_id):
 
     # (用户登录后)判断是否收藏
     if user:
-        # lazy=dynamic 让 sqlalchemy在使用时自动加载，不需要.all()去加载
+        # user.collection_news 后面不加all()
+        # 因为 lazy=dynamic 让 sqlalchemy在使用时自动加载查询,不需要.all()去加载
         if news in user.collection_news:
             is_collected = True
 
