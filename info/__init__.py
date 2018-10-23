@@ -4,7 +4,7 @@
 from logging.handlers import RotatingFileHandler
 import logging
 
-from flask import Flask
+from flask import Flask, render_template, g
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
@@ -71,6 +71,22 @@ def create_app(config_name):
         # 设置一个cookie
         response.set_cookie("csrf_token", csrf_token)
         return response
+
+    # 全局404页面的处理
+    from info.utils.commmon import user_login_data
+
+    # @app.route('/404')
+    # 捕获全局404异常
+    @app.errorhandler(404)
+    @user_login_data
+    def page_not_found(e):
+        """404页面渲染"""
+        user = g.user
+        data = {
+            "user": user.to_dict() if user else None
+
+        }
+        return render_template('news/404.html', data=data)
 
     # 蓝图注册时再导入
     from info.moudles.index import index_blu
