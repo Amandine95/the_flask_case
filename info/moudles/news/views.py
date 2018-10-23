@@ -243,7 +243,7 @@ def comment_like():
         comment_like_obj = CommentLike.query.filter(CommentLike.comment_id == comment_id,
                                                     CommentLike.user_id == user.id).first()
         if not comment_like_obj:
-            # 用户与点赞多对多关系，初始化中间表
+            # 用户与点赞多对多关系,不存在则初始化中间表
             comment_like_obj = CommentLike()
             comment_like_obj.user_id = user.id
             comment_like_obj.comment_id = comment_id
@@ -259,7 +259,7 @@ def comment_like():
             comment.like_count -= 1
 
     try:
-        db.session.add(comment_like_obj)
+
         db.session.commit()
     except Exception as e:
         db.session.rollback()

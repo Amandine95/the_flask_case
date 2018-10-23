@@ -145,11 +145,11 @@ $(function() {
         })
 
     })
-
+    //事件委托，新增标签自动获取事件
     $('.comment_list_con').delegate('a,input', 'click', function () {
 
         var sHandler = $(this).prop('class');
-
+        // >= 0 表示存在这个标签
         if (sHandler.indexOf('comment_reply') >= 0) {
             $(this).next().toggle();
         }
@@ -299,6 +299,7 @@ $(function() {
 
 //更新页面评论数量显示
 function updateCommentCount(){
+    //找到comment_list标签节点，返回列表
     var count = $(".comment_list").length
     $(".comment_count").html(count+'条评论')
 

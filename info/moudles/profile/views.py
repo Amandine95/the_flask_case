@@ -1,7 +1,7 @@
 from flask import render_template, g, redirect, request, jsonify, current_app, session
 
 from info import db, constants
-from info.models import User
+from info.models import User, Category
 from info.utils.commmon import user_login_data
 from info.utils.image_storage import storage
 from info.utils.response_code import RET
@@ -148,3 +148,38 @@ def user_collection():
         "news_dict_list": news_dict_list
     }
     return render_template('news/user_collection.html', data=data)
+
+
+# 发布新闻请求方式2种，get用在获取新闻分类
+@profile_blu.route('/news_release', methods=['POST', 'GET'])
+@user_login_data
+def news_release():
+    """新闻发布"""
+    user = g.user
+    if not user:
+        return redirect('/')
+    # 获取分类模型列表
+    categories = []
+    categories_dict_list = []
+
+    if request.method == 'GET':
+        try:
+            categories = Category.query.all()
+        except Exception as e:
+            current_app.logger.error(e)
+
+        for category in categories:
+            # 除去最新分类
+            if category.id != 1:
+                categories_dict_list.append(category.to_dict())
+        data = {
+            "categories_dict_list": categories_dict_list
+        }
+        return render_template('news/user_news_release.html', data=data)
+
+
+
+
+
+
+
