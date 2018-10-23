@@ -1,7 +1,7 @@
 from flask import render_template, g, redirect, request, jsonify, current_app, session
 
 from info import db, constants
-from info.models import User, Category
+from info.models import User, Category, News
 from info.utils.commmon import user_login_data
 from info.utils.image_storage import storage
 from info.utils.response_code import RET
@@ -176,10 +176,56 @@ def news_release():
             "categories_dict_list": categories_dict_list
         }
         return render_template('news/user_news_release.html', data=data)
+    # post请求，发布新闻操作
+    else:
+        # 1. 获取要提交的数据
+        title = request.form.get("title")
+        source = "个人发布"
+        digest = request.form.get("digest")
+        content = request.form.get("content")
+        index_image = request.files.get("index_image")
+        category_id = request.form.get("category_id")
+        # 校验参数
+        if not all([title, source, digest, content, index_image, category_id]):
+            return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+        try:
+            category_id = int(category_id)
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+        # 数据库中存储图片url，图片存在七牛云并返回url
+        try:
+            # 读取图片信息(图片要读取成二进制)
+            index_image = index_image.read()
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+        try:
+            # 封装的七牛云模块
+            key = storage(index_image)
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.THIRDERR, errmsg="头像上传失败")
+        # 保存新闻图片地址
+        index_image_url = key
 
-
-
-
-
-
-
+        # 初始化数据库模型，新闻模型
+        news = News()
+        news.title = title
+        news.source = source
+        news.digest = digest
+        news.content = content
+        news.category_id = category_id
+        news.index_image_url = index_image_url
+        news.user_id = user.id
+        # 设置审核状态为正在
+        news.status = 1
+        try:
+            db.session.add(news)
+            db.session.commit()
+        except Exception as e:
+            # 数据修改异常回滚
+            db.session.rollback()
+            current_app.logger.error(e)
+            return jsonify(errno=RET.DBERR, errmsg="数据库错误")
+        return jsonify(errno=RET.OK, errmsg="发布成功")
