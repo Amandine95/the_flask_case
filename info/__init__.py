@@ -101,4 +101,8 @@ def create_app(config_name):
     app.register_blueprint(news_blu)
     from info.moudles.profile import profile_blu
     app.register_blueprint(profile_blu)
+
+    from info.moudles.admin import admin_blu
+    # 注册蓝图时添加前缀
+    app.register_blueprint(admin_blu, url_prefix='/admin')
     return app
