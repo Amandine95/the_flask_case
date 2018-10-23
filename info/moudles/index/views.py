@@ -89,7 +89,9 @@ def news_list():
         current_app.logger.error(e)
         return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
     # 3、查询条件(不同种类新闻按照时间顺序排列，cid=1默认就是最新的新闻种类???)
-    filters = []
+    # filters = []
+    # 添加新闻的审核条件,status==0,才会去加载新闻
+    filters = [News.status == 0]
     # 查询不是最新数据
     if cid != 1:
         # 添加条件

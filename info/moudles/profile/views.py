@@ -229,3 +229,46 @@ def news_release():
             current_app.logger.error(e)
             return jsonify(errno=RET.DBERR, errmsg="数据库错误")
         return jsonify(errno=RET.OK, errmsg="发布成功")
+
+
+@profile_blu.route('/news_list')
+@user_login_data
+def release_news_list():
+    """用户发布的新闻列表"""
+    user = g.user
+    if not user:
+        return redirect('/')
+
+    page = request.args.get('page', 1)
+    # 查询发布新闻
+    my_news_list = []
+    current_page = 1
+    total_page = 1
+    try:
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        page = 1
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+
+    try:
+        paginate = News.query.filter(News.user_id == user.id).paginate(page,
+                                                                       constants.USER_COLLECTION_MAX_NEWS,
+                                                                       False)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
+    current_page = paginate.page
+    total_page = paginate.pages
+    my_news_list = paginate.items
+    my_news_dict_list = []
+    for news in my_news_list:
+        # to_review_dict()审视字典列表，包含审核标志
+        my_news_dict_list.append(news.to_review_dict())
+    data = {
+        "news_list": my_news_dict_list,
+        "current_page": current_page,
+        "total_page": total_page
+    }
+
+    return render_template('news/user_news_list.html', data=data)
