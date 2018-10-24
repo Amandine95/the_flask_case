@@ -11,13 +11,12 @@ from info.utils.commmon import user_login_data
 @user_login_data
 def admin_index():
     """管理员主页"""
-    # user = g.user
-    # is_admin = user.is_admin
-    # # 是管理员,且已登录
-    # if user and is_admin:
-    #     return render_template('admin/index.html')
-    # else:
-    return redirect(url_for('admin.admin_login'))
+    user = g.user
+    data = {
+        "user": user.to_dict()
+    }
+
+    return render_template('admin/index.html', data=data)
 
 
 @admin_blu.route('/login', methods=['POST', 'GET'])
