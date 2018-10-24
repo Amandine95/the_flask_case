@@ -182,9 +182,11 @@ def login():
     # 2、校验参数
     if not all([mobile, password]):
         return jsonify(errno=RET.PARAMERR, errmsg="参数不能为空")
+
     # 手机号规则校验
-    if not re.match('^1[35678]\\d{9}$', mobile):
-        return jsonify(errno=RET.PARAMERR, errmsg="手机号不合法")
+    # if not re.match('^1[35678]\\d{9}$', mobile):
+    #     return jsonify(errno=RET.PARAMERR, errmsg="手机号不合法")
+
     # 查询数据库是否有该手机号
     try:
         user = User.query.filter(User.mobile == mobile).first()
@@ -226,4 +228,7 @@ def logout():
     session.pop('user_id', None)
     session.pop('mobile', None)
     session.pop('nick_name', None)
+    # 管理员登出，删除 is_admin 不删除的话，先登陆的管理员is_admin存储在session中，
+    # 后登陆的普通用户就能访问管理员主页了
+    session.pop('is_admin', None)
     return jsonify(errno=RET.OK, errmsg="退出成功")
