@@ -1,20 +1,30 @@
-from flask import render_template, request, current_app, session, redirect, url_for
+from flask import render_template, request, current_app, session, redirect, url_for, g
 
 from info.models import User
 from info.moudles.admin import admin_blu
 
+from info.utils.commmon import user_login_data
 
+
+# 访问管理员主页要做权限校验
 @admin_blu.route('/index')
+@user_login_data
 def admin_index():
     """管理员主页"""
-    return render_template('admin/index.html')
+    user = g.user
+    is_admin = user.is_admin
+    # 是管理员,且已登录
+    if user and is_admin:
+        return render_template('admin/index.html')
+    else:
+        return redirect(url_for('admin.admin_login'))
 
 
 @admin_blu.route('/login', methods=['POST', 'GET'])
 def admin_login():
     """管理员登录"""
     if request.method == 'GET':
-        # 登陆之前先判断是不是已经登录,已登录直接跳转管理员主页。
+        # 登陆之前先判断是不是已经登录并且是不是管理员,已登录直接跳转管理员主页。
         user_id = session.get("user_id", None)
         is_admin = session.get("is_admin", False)
         if user_id and is_admin:

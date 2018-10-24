@@ -10,7 +10,14 @@ $(function () {
 
         var signature = $("#signature").val()
         var nick_name = $("#nick_name").val()
-        var gender = $(".gender").val()
+        //解决性别选择bug，判断单选框是否被选中来取值
+        var gender = $('input:radio:checked').val()
+        //遍历单选框
+        // $('input:radio').each(function(){
+        //     if(this.checked){
+        //         gender = $(this).val()
+        //     }
+        // })
 
         if (!nick_name) {
             alert('请输入昵称')
