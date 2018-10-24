@@ -183,6 +183,7 @@ $(function() {
                     data: JSON.stringify(params),
                     success: function (resp) {
                             if (resp.errno == "0") {
+                            //    通过模板获取属性值(新添加的子评论)
                             var like_count = $this.attr('data-likecount')
                             //    修改点赞bug
                                 if(like_count==undefined){
