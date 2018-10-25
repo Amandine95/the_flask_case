@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from flask import render_template, request, current_app, session, redirect, url_for, g
 
+from info import constants
 from info.models import User
 from info.moudles.admin import admin_blu
 
@@ -114,3 +115,35 @@ def user_count():
     }
 
     return render_template('admin/user_count.html', data=data)
+
+
+# 用户列表
+@admin_blu.route('/user_list')
+def user_list():
+    """用户列表"""
+    page = request.args.get('page', 1)
+    try:
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        page = 1
+    users_list = []
+    current_page = 1
+    total_page = 1
+    try:
+        paginate = User.query.filter(User.is_admin == False).paginate(page, constants.ADMIN_USER_PAGE_MAX_COUNT, False)
+        users_list = paginate.items
+        current_page = paginate.page
+        total_page = paginate.pages
+    except Exception as e:
+        current_app.logger.error(e)
+    user_dict_list = []
+    for user in users_list:
+        user_dict_list.append(user.to_admin_dict())
+    data = {
+        "current_page": current_page,
+        "total_page": total_page,
+        "user_dict_list": user_dict_list
+    }
+
+    return render_template('admin/user_list.html', data=data)
