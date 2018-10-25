@@ -154,6 +154,8 @@ def user_list():
 def review_list():
     """新闻审核"""
     page = request.args.get("page", 1)
+    # 关键字搜索功能
+    keywords = request.args.get("keywords", None)
     try:
         page = int(page)
     except Exception as e:
@@ -163,10 +165,14 @@ def review_list():
     news_review_list = []
     current_page = 1
     total_page = 1
-
+    # 查询条件过滤器列表(可以将多个条件放里面)
+    filters = [News.status != 0]
+    if keywords:
+        # 新闻标题包含关键词
+        filters.append(News.title.contains(keywords))
     try:
-        # status == 0  审核通过
-        paginate = News.query.filter(News.status != 0) \
+        # status == 0  审核通过      对查询条件过滤器解包
+        paginate = News.query.filter(*filters) \
             .order_by(News.create_time.desc()) \
             .paginate(page, constants.ADMIN_NEWS_PAGE_MAX_COUNT, False)
 
@@ -183,4 +189,3 @@ def review_list():
     data = {"total_page": total_page, "current_page": current_page, "news_dict_list": news_dict_list}
 
     return render_template('admin/news_review.html', data=data)
-
