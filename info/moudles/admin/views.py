@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timedelta
 
-from flask import render_template, request, current_app, session, redirect, url_for, g
+from flask import render_template, request, current_app, session, redirect, url_for, g, jsonify
 
 from info import constants
 from info.models import User, News
@@ -9,8 +9,10 @@ from info.moudles.admin import admin_blu
 
 from info.utils.commmon import user_login_data
 
-
 # 访问管理员主页要做权限校验
+from info.utils.response_code import RET
+
+
 @admin_blu.route('/index')
 @user_login_data
 def admin_index():
@@ -200,8 +202,38 @@ def news_review_detail(news_id):
     except Exception as e:
         current_app.logger.error(e)
     if not news:
-        return render_template('admin/news_review_detail.html', data={"errmsg":"没有这条新闻"})
+        return render_template('admin/news_review_detail.html', data={"errmsg": "没有这条新闻"})
     data = {
         "news": news.to_dict()
     }
     return render_template('admin/news_review_detail.html', data=data)
+
+
+@admin_blu.route('/news_review_action', methods=["POST"])
+def news_review_action():
+    """新闻审核操作"""
+    news_id = request.json.get('news_id')
+    action = request.json.get('action')
+    if not all([news_id, action]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    try:
+        news_id = int(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
+    if not news:
+        return jsonify(errno=RET.NODATA, errmsg="没有这条新闻")
+    if action == "accept":
+        news.status = 0
+    else:
+        reason = request.json.get('reason')
+        if not reason:
+            return jsonify(errno=RET.PARAMERR, errmsg="请输入拒绝原因")
+        news.reason = reason
+        news.status = -1
+    return jsonify(errno=RET.OK, errmsg="ok")
