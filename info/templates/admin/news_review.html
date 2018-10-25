@@ -38,7 +38,8 @@
                     未审核
                 {% endif %}</td>
                 <td>
-						<a href="news_review_detail.html" class="review">{{ news.reason }}</a>
+                        {# url_for() 里传递参数  #}
+						<a href="{{ url_for('admin.news_review_detail',news_id = news.id) }}" class="review" >审核</a>
 					</td>
 				</tr>
                 {% endfor %}

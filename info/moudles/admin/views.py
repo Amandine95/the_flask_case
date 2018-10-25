@@ -152,7 +152,7 @@ def user_list():
 # 新闻审核
 @admin_blu.route('/review_list')
 def review_list():
-    """新闻审核"""
+    """新闻审核列表"""
     page = request.args.get("page", 1)
     # 关键字搜索功能
     keywords = request.args.get("keywords", None)
@@ -189,3 +189,19 @@ def review_list():
     data = {"total_page": total_page, "current_page": current_page, "news_dict_list": news_dict_list}
 
     return render_template('admin/news_review.html', data=data)
+
+
+@admin_blu.route('/news_review_detail/<int:news_id>')
+def news_review_detail(news_id):
+    """新闻审核详情"""
+    news = None
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+    if not news:
+        return render_template('admin/news_review_detail.html', data={"errmsg":"没有这条新闻"})
+    data = {
+        "news": news.to_dict()
+    }
+    return render_template('admin/news_review_detail.html', data=data)
