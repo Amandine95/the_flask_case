@@ -237,3 +237,44 @@ def news_review_action():
         news.reason = reason
         news.status = -1
     return jsonify(errno=RET.OK, errmsg="ok")
+
+
+@admin_blu.route('/news_edit')
+def news_edit():
+    """新闻版式编辑"""
+    page = request.args.get("page", 1)
+    # 关键字搜索功能
+    keywords = request.args.get("keywords", None)
+    try:
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        page = 1
+
+    news_review_list = []
+    current_page = 1
+    total_page = 1
+    # 新闻版式编辑查询的是审核通过的新闻
+    filters = [News.status == 0]
+    if keywords:
+        # 新闻标题包含关键词
+        filters.append(News.title.contains(keywords))
+    try:
+        # status == 0  审核通过      对查询条件过滤器解包
+        paginate = News.query.filter(*filters) \
+            .order_by(News.create_time.desc()) \
+            .paginate(page, constants.ADMIN_NEWS_PAGE_MAX_COUNT, False)
+
+        news_review_list = paginate.items
+        current_page = paginate.page
+        total_page = paginate.pages
+    except Exception as e:
+        current_app.logger.error(e)
+
+    news_dict_list = []
+    for news in news_review_list:
+        news_dict_list.append(news.to_basic_dict())
+
+    data = {"total_page": total_page, "current_page": current_page, "news_dict_list": news_dict_list}
+
+    return render_template('admin/news_edit.html', data=data)
