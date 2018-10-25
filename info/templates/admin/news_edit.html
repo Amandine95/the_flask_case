@@ -32,8 +32,10 @@
 					<td>{{ news.id }}</td>
                     <td class="tleft"><a href="/news/{{ news.id }}" target="_blank">{{ news.title }}</a></td>
                     <td>{{ news.clicks }}</td>
+                    <td>{{ news.create_time }}</td>
 					<td>
-						<a href="news_edit_detail.html" class="edit">编辑</a>
+                        {# ? 后面加参数 #}
+						<a href="{{ url_for('admin.news_edit_detail')}}?news_id={{ news.id }}" class="edit">编辑</a>
 					</td>
 				</tr>
                 {% endfor %}

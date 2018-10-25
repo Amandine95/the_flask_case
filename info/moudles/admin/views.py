@@ -1,10 +1,10 @@
 import time
 from datetime import datetime, timedelta
 
-from flask import render_template, request, current_app, session, redirect, url_for, g, jsonify
+from flask import render_template, request, current_app, session, redirect, url_for, g, jsonify, abort
 
 from info import constants
-from info.models import User, News
+from info.models import User, News, Category
 from info.moudles.admin import admin_blu
 
 from info.utils.commmon import user_login_data
@@ -278,3 +278,43 @@ def news_edit():
     data = {"total_page": total_page, "current_page": current_page, "news_dict_list": news_dict_list}
 
     return render_template('admin/news_edit.html', data=data)
+
+
+@admin_blu.route('/news_edit_detail', methods=["POST", "GET"])
+def news_edit_detail():
+    """新闻编辑详情"""
+    news_id = request.args.get('news_id')
+    if not news_id:
+        abort(404)
+    try:
+        news_id = int(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    news = None
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+    if not news:
+        return render_template('admin/news_edit_detail.html', data={"errmsg": "没有这条新闻"})
+    # 新文编辑详情页和审核详情页区别：多出分类选项
+    categories = []
+    try:
+        categories = Category.query.all()
+    except Exception as e:
+        current_app.logger.error(e)
+    category_dict_list = []
+    for category in categories:
+        # category_dict = category.to_dict()
+        # 增加判断字段,前端根据字段来显示指定分类
+        if category.news_id == news.id:
+            category["is_selected"] = True
+        # 移除最新分类
+        if category.id != 1:
+            category_dict_list.append(category.to_dict())
+    data = {
+        "news": news.to_dict(),
+        "category_dict_list": category_dict_list
+    }
+    return render_template('admin/news_edit_detail.html', data=data)
