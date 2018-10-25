@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from flask import render_template, request, current_app, session, redirect, url_for, g
 
 from info import constants
-from info.models import User
+from info.models import User, News
 from info.moudles.admin import admin_blu
 
 from info.utils.commmon import user_login_data
@@ -147,3 +147,40 @@ def user_list():
     }
 
     return render_template('admin/user_list.html', data=data)
+
+
+# 新闻审核
+@admin_blu.route('/review_list')
+def review_list():
+    """新闻审核"""
+    page = request.args.get("page", 1)
+    try:
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        page = 1
+
+    news_review_list = []
+    current_page = 1
+    total_page = 1
+
+    try:
+        # status == 0  审核通过
+        paginate = News.query.filter(News.status != 0) \
+            .order_by(News.create_time.desc()) \
+            .paginate(page, constants.ADMIN_NEWS_PAGE_MAX_COUNT, False)
+
+        news_review_list = paginate.items
+        current_page = paginate.page
+        total_page = paginate.pages
+    except Exception as e:
+        current_app.logger.error(e)
+
+    news_dict_list = []
+    for news in news_review_list:
+        news_dict_list.append(news.to_review_dict())
+
+    data = {"total_page": total_page, "current_page": current_page, "news_dict_list": news_dict_list}
+
+    return render_template('admin/news_review.html', data=data)
+
