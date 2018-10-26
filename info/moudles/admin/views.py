@@ -59,7 +59,7 @@ def admin_login():
         session["mobile"] = user.mobile
         session["nick_name"] = user.nick_name
         session["is_admin"] = user.is_admin
-        #  跳转主界面(前缀.函数名)
+        #  跳转主界面(前缀.函数名),执行其他视图函数
         return redirect(url_for('admin.admin_index'))
 
 
@@ -365,4 +365,22 @@ def news_edit_detail():
         return jsonify(errno=RET.OK, errmsg="编辑成功")
 
 
+@admin_blu.route('/news_category')
+def news_category():
+    """新闻分类编辑"""
+    try:
+        categories = Category.query.all()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
+    if not categories:
+        return jsonify(errno=RET.NODATA, errmsg="分类信息为空")
+    category_dict_list = []
+    for category in categories:
+        if category.id != 1:
+            category_dict_list.append(category.to_dict())
 
+    data = {
+        "category_dict_list": category_dict_list
+    }
+    return render_template('admin/news_type.html', data=data)
