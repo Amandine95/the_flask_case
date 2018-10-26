@@ -276,3 +276,44 @@ def comment_like():
         current_app.logger.error(e)
 
     return jsonify(errno=RET.OK, errmsg="操作成功")
+
+
+# 用户关注
+@news_blu.route('/user_follow', methods=["POST"])
+@user_login_data
+def user_follow():
+    """关注用户"""
+    user = g.user
+    if not user:
+        return jsonify(errno=RET.USERERR, errmsg="用户未登录")
+    user_id = request.json.get('user_id')
+    action = request.json.get('action')
+    if not all([user_id, action]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    try:
+        user_id = int(user_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    if action not in ("follow", "unfollow"):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    try:
+        # 查询被关注的用户
+        user_followed = User.query.get(user_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
+    if not user_followed:
+        return jsonify(RET.NODATA, errmsg="没有这个用户")
+    # 添加关注(被关注的用户添加到登录用户的关注列表)
+    if action == "follow":
+        if user_followed not in user.followed:
+            user.followed.append(user_followed)
+        else:
+            return jsonify(errno=RET.DATAEXIST, errmsg="不能重复关注")
+    else:
+        if user_followed not in user_followed:
+            return jsonify(errno=RET.PARAMERR, errmsg="用户没有被关注过")
+        else:
+            user.followed.remove(user_followed)
+    return jsonify(errno=RET.OK, errmsg="ok")
