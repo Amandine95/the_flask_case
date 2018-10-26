@@ -341,3 +341,44 @@ def other_user():
 
     }
     return render_template('news/other.html', data=data)
+
+    # 获取被关注用户的新闻列表(局部刷新，前端ajax)
+
+
+@profile_blu.route('/other_news_list')
+@user_login_data
+def other_news_list():
+    """被关注用户新闻列表"""
+    page = request.args.get("page", 1)
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    try:
+        user_id = int(user_id)
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        abort(404)
+        page = 1
+    news_dict_list = []
+    current_page = 1
+    total_page = 1
+    try:
+        paginate = News.query.filter(News.author_id == user_id).paginate(page, constants.OTHER_NEWS_PAGE_MAX_COUNT,
+                                                                         False)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
+    if not paginate:
+        return jsonify(errno=RET.NODATA, errmsg="没有该用户的新闻")
+    news_list = paginate.items
+    current_page = paginate.page
+    total_page = paginate.pages
+    for news in news_list:
+        news_dict_list.append(news.to_dict())
+    data = {
+        "news_dict_list": news_dict_list,
+        "current_page": current_page,
+        "total_page": total_page
+    }
+    return jsonify(errno=RET.OK, errmsg="ok", data=data)
