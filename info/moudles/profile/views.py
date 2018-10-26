@@ -126,7 +126,7 @@ def user_collection():
     user = g.user
     if not user:
         return redirect('/')
-    # get请求，？后携带参数 页数 默认为1
+    # get请求 ？后携带参数 页数 默认为1
     page = request.args.get('page', 1)
     try:
         page = int(page)
@@ -274,7 +274,7 @@ def release_news_list():
     return render_template('news/user_news_list.html', data=data)
 
 
-# 用户关注
+# 我的关注
 @profile_blu.route('/user_follow')
 @user_login_data
 def user_follow():
@@ -309,3 +309,16 @@ def user_follow():
         "total_page": total_page
     }
     return render_template('news/user_follow.html', data=data)
+
+
+# 其他用户信息，从我的关注跳转
+@profile_blu.route('/other_user')
+@user_login_data
+def other_user():
+    """其他用户"""
+    user = g.user
+
+    data = {
+
+    }
+    return render_template('news/other.html', data=data)
