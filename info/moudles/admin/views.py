@@ -77,7 +77,7 @@ def user_count():
     mon_count = 0
     # 当前时间(当年tm_year、当月tm_mon、当日tm_day、时、分、秒)
     t = time.localtime()
-    # 月统计起始时间,返回一个时间对象
+    # 月统计起始时间,返回一个日期对象，strptime字符串转成对象
     mon_begin_time = datetime.strptime('%d-%02d-01' % (t.tm_year, t.tm_mon), '%Y-%m-%d')
     try:
         # 创建时间大于本月初
@@ -98,13 +98,14 @@ def user_count():
     # 当天时间对象
     today_date = datetime.strptime(('%d-%02d-%02d' % (t.tm_year, t.tm_mon, t.tm_mday)), "%Y-%m-%d")
     for i in range(0, 31):
-        # 开始时间
+        # 开始时间   timedelta计算时间节点
         begin_date = today_date - timedelta(days=i)
         # 结束时间
         end_date = today_date - timedelta(days=i - 1)
         count = User.query.filter(User.is_admin == False, User.last_login >= begin_date,
                                   User.last_login < end_date).count()
         active_count.append(count)
+        # strftime时间对象转为字符串
         active_time.append(begin_date.strftime("%Y-%m-%d"))
     # 反转
     active_time.reverse()

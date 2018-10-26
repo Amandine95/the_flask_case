@@ -59,8 +59,15 @@ def news_detail(news_id):
 
     # 是否收藏标志
     is_collected = False
+    # 新闻作者是否被关注
+    is_followed = False
+    # 当前新闻有作者 且 有用户登录
+    if news.user and user:
+        # 登陆用户关注了该作者
+        if news.user in user.followed:
+            is_followed = True
 
-    # (用户登录后)判断是否收藏
+    # (用户登录后)判断是否收藏新闻，关注新闻作者
     if user:
         # user.collection_news 后面不加all()
         # 因为 lazy=dynamic 让 sqlalchemy在使用时自动加载查询,不需要.all()去加载
@@ -106,10 +113,13 @@ def news_detail(news_id):
 
     data = {
         "user": user.to_dict() if user else None,
+        # 新闻排行列表
         "news_dict_list": news_dict_list,
+        # 主新闻列表
         "news": news.to_dict(),
         "is_collected": is_collected,
-        "comments": comment_dict_list
+        "comments": comment_dict_list,
+        "is_followed": is_followed
 
     }
     # print(news.to_dict())
