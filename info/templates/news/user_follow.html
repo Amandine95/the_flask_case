@@ -16,8 +16,8 @@
             {% for user in data.user_follow_list %}
             <li class="author_card card_list">
                 {# target = "_blank"  跳转新界面 #}
-                <a href="{{ url_for('profile.other_user') }}" target="_blank" class="author_pic"><img src="{% if user.avatar_url %}{{ user.avatar_url }}{% else %}../../static/news/images/cat.jpg" {% endif %}alt="author_pic"></a>
-                <a href="{{ url_for('profile.other_user') }}" target="_blank" class="author_name">{{ user.nick_name }}</a>
+                <a href="{{ url_for('profile.other_user') }}?user_id={{ user.id }}" target="_blank" class="author_pic"><img src="{% if user.avatar_url %}{{ user.avatar_url }}{% else %}../../static/news/images/cat.jpg" {% endif %}alt="author_pic"></a>
+                <a href="{{ url_for('profile.other_user') }}?user_id={{ user.id }}" target="_blank" class="author_name">{{ user.nick_name }}</a>
                 <div class="author_resume">{{ user.signature }}</div>
                 <div class="writings"><span>总篇数</span><b>{{ user.news_count }}</b></div>
                 <div class="follows"><span>粉丝</span><b>{{ user.followers_count }}</b></div>

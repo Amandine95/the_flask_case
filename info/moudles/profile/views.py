@@ -1,4 +1,4 @@
-from flask import render_template, g, redirect, request, jsonify, current_app, session
+from flask import render_template, g, redirect, request, jsonify, current_app, session, abort
 
 from info import db, constants
 from info.models import User, Category, News
@@ -317,8 +317,27 @@ def user_follow():
 def other_user():
     """其他用户"""
     user = g.user
+    # 参数
+    other_user_id = request.args.get('user_id')
+    if not other_user_id:
+        abort(404)
+    try:
+        other_user_obj = User.query.get(other_user_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库错误")
+    if not other_user_obj:
+        return jsonify(errno=RET.NODATA, errmsg="没有这个用户")
+    is_followed = False
+    # 用户登录
+    if user:
+        # 登陆用户关注了该作者
+        if other_user_obj in user.followed:
+            is_followed = True
 
     data = {
+        "other_user": other_user_obj.to_dict(),
+        "is_followed": is_followed
 
     }
     return render_template('news/other.html', data=data)
