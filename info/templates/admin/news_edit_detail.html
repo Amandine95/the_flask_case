@@ -15,8 +15,9 @@
 			当前位置：新闻管理>新闻版本编辑			
 		</div>
 		<div class="pannel">
-			<div class="news_edit">
+			<form class="news_edit">
 			<h3 class="review_title">新闻版式编辑</h3>
+
 	    	<div class="form_group">
                 <label>新闻标题：</label>
                     <input name="title" type="text" class="input_txt2" value="{{ data.news.title }}">
@@ -52,9 +53,11 @@
 				<input type="submit" value="确定" class="confirm">
 				<input type="button" value="取消" class="cancel" onclick="cancel()">
 			</div>
-                <input type="hidden" name="news_id" value="{{ data.news.id }}">
-			</form>	
-		</div>
 
-</body>
+
+
+                <input type="hidden" name="news_id" value="{{ data.news.id }}">
+            </form>
+        </div>
+    </body>
 </html>

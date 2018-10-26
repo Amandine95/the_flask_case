@@ -10,6 +10,7 @@ from info.moudles.admin import admin_blu
 from info.utils.commmon import user_login_data
 
 # 访问管理员主页要做权限校验
+from info.utils.image_storage import storage
 from info.utils.response_code import RET
 
 
@@ -283,38 +284,85 @@ def news_edit():
 @admin_blu.route('/news_edit_detail', methods=["POST", "GET"])
 def news_edit_detail():
     """新闻编辑详情"""
-    news_id = request.args.get('news_id')
-    if not news_id:
-        abort(404)
-    try:
-        news_id = int(news_id)
-    except Exception as e:
-        current_app.logger.error(e)
-        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
-    news = None
-    try:
-        news = News.query.get(news_id)
-    except Exception as e:
-        current_app.logger.error(e)
-    if not news:
-        return render_template('admin/news_edit_detail.html', data={"errmsg": "没有这条新闻"})
-    # 新文编辑详情页和审核详情页区别：多出分类选项
-    categories = []
-    try:
-        categories = Category.query.all()
-    except Exception as e:
-        current_app.logger.error(e)
-    category_dict_list = []
-    for category in categories:
-        # category_dict = category.to_dict()
-        # 增加判断字段,前端根据字段来显示指定分类
-        if category.news_id == news.id:
-            category["is_selected"] = True
-        # 移除最新分类
-        if category.id != 1:
-            category_dict_list.append(category.to_dict())
-    data = {
-        "news": news.to_dict(),
-        "category_dict_list": category_dict_list
-    }
-    return render_template('admin/news_edit_detail.html', data=data)
+    # get请求获取新闻编辑详情页内容
+    if request.method == "GET":
+        news_id = request.args.get('news_id')
+        if not news_id:
+            abort(404)
+        try:
+            news_id = int(news_id)
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+        news = None
+        try:
+            news = News.query.get(news_id)
+        except Exception as e:
+            current_app.logger.error(e)
+        if not news:
+            return render_template('admin/news_edit_detail.html', data={"errmsg": "没有这条新闻"})
+        # 新文编辑详情页和审核详情页区别：多出分类选项
+        categories = []
+        try:
+            categories = Category.query.all()
+        except Exception as e:
+            current_app.logger.error(e)
+        category_dict_list = []
+        for category in categories:
+            # category_dict = category.to_dict()
+            # 增加判断字段,前端根据字段来显示指定分类
+            if category.news_id == news.id:
+                category["is_selected"] = True
+            # 移除最新分类
+            if category.id != 1:
+                category_dict_list.append(category.to_dict())
+        data = {
+            "news": news.to_dict(),
+            "category_dict_list": category_dict_list
+        }
+        return render_template('admin/news_edit_detail.html', data=data)
+    # post请求提交编辑后的内容
+    else:
+        news_id = request.form.get("news_id")
+        title = request.form.get("title")
+        digest = request.form.get("digest")
+        content = request.form.get("content")
+        index_image = request.files.get("index_image")
+        category_id = request.form.get("category_id")
+        # 1.1 判断数据是否有值
+        if not all([title, digest, content, category_id]):
+            return jsonify(errno=RET.PARAMERR, errmsg="参数有误")
+
+        news = None
+        try:
+            news = News.query.get(news_id)
+        except Exception as e:
+            current_app.logger.error(e)
+        if not news:
+            return jsonify(errno=RET.NODATA, errmsg="未查询到新闻数据")
+
+        # 1.2 尝试读取图片
+        if index_image:
+            try:
+                index_image = index_image.read()
+            except Exception as e:
+                current_app.logger.error(e)
+                return jsonify(errno=RET.PARAMERR, errmsg="参数有误")
+
+            # 2. 将标题图片上传到七牛
+            try:
+                key = storage(index_image)
+            except Exception as e:
+                current_app.logger.error(e)
+                return jsonify(errno=RET.THIRDERR, errmsg="上传图片错误")
+            news.index_image_url = constants.QINIU_DOMIN_PREFIX + key
+        # 3. 设置相关数据
+        news.title = title
+        news.digest = digest
+        news.content = content
+        news.category_id = category_id
+
+        return jsonify(errno=RET.OK, errmsg="编辑成功")
+
+
+
