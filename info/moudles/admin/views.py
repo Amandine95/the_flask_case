@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from flask import render_template, request, current_app, session, redirect, url_for, g, jsonify, abort
 
-from info import constants
+from info import constants, db
 from info.models import User, News, Category
 from info.moudles.admin import admin_blu
 
@@ -384,3 +384,39 @@ def news_category():
         "category_dict_list": category_dict_list
     }
     return render_template('admin/news_type.html', data=data)
+
+
+# 分类操作传递参数：修改(当前id,name)、新增(name)
+@admin_blu.route('/category_operate', methods="POST")
+def category_operate():
+    """新闻分类的操作"""
+    category_id = request.json.get('category_id')
+    category_name = request.json.get('category_name')
+    # 修改当前id对应的name
+    if category_id:
+        try:
+            category = Category.query.get(category_id)
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
+        if not category:
+            return jsonify(errno=RET.NODATA, errmsg="没有这个分类")
+        category.name = category_name
+        return jsonify(errno=RET.OK, errmsg="修改成功")
+    # 新增分类
+    else:
+        if not category_name:
+            return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+        categories = Category.query.all()
+        if category_name in categories.name:
+            return jsonify(errno=RET.PARAMERR, errmsg="分类重复")
+        # 新建分类对象
+        category = Category()
+        category.name = category_name
+        try:
+            db.session.add(category)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(e)
+        return jsonify(errno=RET.OK, errmsg="新增成功")
