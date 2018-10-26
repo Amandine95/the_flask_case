@@ -272,3 +272,40 @@ def release_news_list():
     }
 
     return render_template('news/user_news_list.html', data=data)
+
+
+# 用户关注
+@profile_blu.route('/user_follow')
+@user_login_data
+def user_follow():
+    """用户关注信息"""
+    user = g.user
+    page = request.args.get('page', 1)
+    try:
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        page = 1
+    follows = []
+    current_page = 1
+    total_page = 1
+    try:
+        paginate = user.followed.paginate(page, constants.USER_FOLLOWED_MAX_COUNT, False)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库错误")
+    if not paginate:
+        return jsonify(errno=RET.NODATA, errmsg="没有数据")
+    follows = paginate.items
+    current_page = paginate.page
+    total_page = paginate.pages
+    user_follow_list = []
+    # ***转字典
+    for user in follows:
+        user_follow_list.append(user.to_dict())
+    data = {
+        "user_follow_list": user_follow_list,
+        "current_page": current_page,
+        "total_page": total_page
+    }
+    return render_template('news/user_follow.html', data=data)
