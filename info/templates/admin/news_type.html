@@ -20,7 +20,8 @@
 				</tr>
                 {% for category in data.category_dict_list %}
 				<tr>
-					<td>{{ category.id - 1 }}</td>
+                    {# 解决分类新增、修改bug#}
+					<td>{{ category.id }}</td>
 					<td>{{ category.name }}</td>
 					<td><a href="javascript:;" class="edit">编辑</a></td>
 				</tr>

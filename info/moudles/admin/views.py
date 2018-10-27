@@ -379,9 +379,11 @@ def news_category():
         return jsonify(errno=RET.NODATA, errmsg="分类信息为空")
     category_dict_list = []
     for category in categories:
+        # 这样去除最新分类，效果一样，但是数据库逻辑有bug，列表中展示的id比在数据库中的id小1
         if category.id != 1:
             category_dict_list.append(category.to_dict())
-
+    # 去除最新分类
+    # category_dict_list.pop(0)
     data = {
         "category_dict_list": category_dict_list
     }
@@ -389,11 +391,12 @@ def news_category():
 
 
 # 分类操作传递参数：修改(当前id,name)、新增(name)
-@admin_blu.route('/category_operate', methods="POST")
+@admin_blu.route('/category_operate', methods=["GET", "POST"])
 def category_operate():
     """新闻分类的操作"""
-    category_id = request.json.get('category_id')
-    category_name = request.json.get('category_name')
+    category_id = request.json.get('id')
+    print(category_id)
+    category_name = request.json.get('name')
     # 修改当前id对应的name
     if category_id:
         try:
@@ -410,8 +413,9 @@ def category_operate():
         if not category_name:
             return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
         categories = Category.query.all()
-        if category_name in categories.name:
-            return jsonify(errno=RET.PARAMERR, errmsg="分类重复")
+        for category in categories:
+            if category_name == category.name:
+                return jsonify(errno=RET.PARAMERR, errmsg="分类重复")
         # 新建分类对象
         category = Category()
         category.name = category_name
