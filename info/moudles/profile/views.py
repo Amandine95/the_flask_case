@@ -337,7 +337,8 @@ def other_user():
 
     data = {
         "other_user": other_user_obj.to_dict(),
-        "is_followed": is_followed
+        "is_followed": is_followed,
+        "user": user.to_dict()
 
     }
     return render_template('news/other.html', data=data)
