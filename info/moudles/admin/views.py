@@ -310,13 +310,14 @@ def news_edit_detail():
             current_app.logger.error(e)
         category_dict_list = []
         for category in categories:
-            # category_dict = category.to_dict()
+            category_dict = category.to_dict()
             # 增加判断字段,前端根据字段来显示指定分类
-            if category.news_id == news.id:
-                category["is_selected"] = True
+            if category.id == news.category_id:
+                # 一定区分对象，字典的区别
+                category_dict["is_selected"] = True
             # 移除最新分类
             if category.id != 1:
-                category_dict_list.append(category.to_dict())
+                category_dict_list.append(category_dict)
         data = {
             "news": news.to_dict(),
             "category_dict_list": category_dict_list
