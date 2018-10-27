@@ -312,7 +312,7 @@ def user_follow():
         else:
             return jsonify(errno=RET.DATAEXIST, errmsg="不能重复关注")
     else:
-        if user_followed not in user_followed:
+        if user_followed not in user.followed:
             return jsonify(errno=RET.PARAMERR, errmsg="用户没有被关注过")
         else:
             user.followed.remove(user_followed)
